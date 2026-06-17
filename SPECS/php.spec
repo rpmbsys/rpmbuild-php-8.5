@@ -1423,8 +1423,8 @@ exit 0
 %license lexbor_LICENSE
 %doc php.ini-*
 %config(noreplace) %{php_sysconfdir}/php.ini
-%config(noreplace) %{_sysconfdir}/php.d/10-opcache.ini
-%config(noreplace) %{_sysconfdir}/php.d/opcache-default.blacklist
+%config(noreplace) %{php_sysconfdir}/php.d/10-opcache.ini
+%config(noreplace) %{php_sysconfdir}/php.d/opcache-default.blacklist
 %dir %{php_sysconfdir}/php.d
 %dir %{php_sysconfdir}/php-cgi-fcgi.d
 %dir %{php_libdir}
@@ -1467,6 +1467,7 @@ exit 0
 %files cgi
 %{_bindir}/%{bin_cgi}
 %config(noreplace) %{php_sysconfdir}/php-cgi-fcgi.ini
+%config(noreplace) %{php_sysconfdir}/php-cgi-fcgi.d/10-opcache.ini
 %{_mandir}/man1/%{bin_cgi}.1*
 %endif
 
