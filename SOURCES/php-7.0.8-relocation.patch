@@ -3,7 +3,7 @@ diff -rup php-7.0.8.orig/ext/pdo/Makefile.frag php-7.0.8/ext/pdo/Makefile.frag
 +++ php-7.0.8/ext/pdo/Makefile.frag	2016-07-21 14:42:26.611000000 +0200
 @@ -1,4 +1,4 @@
 -phpincludedir=$(prefix)/include/php
-+phpincludedir=$(prefix)/include/php84
++phpincludedir=$(prefix)/include/php85
  
  PDO_HEADER_FILES= \
  	php_pdo.h \
@@ -28,7 +28,7 @@ diff -rup php-7.0.8.orig/sapi/fpm/fpm/fpm_conf.c php-7.0.8/sapi/fpm/fpm/fpm_conf
  
  	if (!fpm_global_config.error_log) {
 -		fpm_global_config.error_log = strdup("log/php-fpm.log");
-+		fpm_global_config.error_log = strdup("log/php84-fpm.log");
++		fpm_global_config.error_log = strdup("log/php85-fpm.log");
  	}
  
  #ifdef HAVE_SYSTEMD
@@ -37,7 +37,7 @@ diff -rup php-7.0.8.orig/sapi/fpm/fpm/fpm_conf.c php-7.0.8/sapi/fpm/fpm/fpm_conf
  #ifdef HAVE_SYSLOG_H
  	if (!fpm_global_config.syslog_ident) {
 -		fpm_global_config.syslog_ident = strdup("php-fpm");
-+		fpm_global_config.syslog_ident = strdup("php84-fpm");
++		fpm_global_config.syslog_ident = strdup("php85-fpm");
  	}
  
  	if (fpm_global_config.syslog_facility < 0) {
@@ -46,10 +46,10 @@ diff -rup php-7.0.8.orig/sapi/fpm/fpm/fpm_conf.c php-7.0.8/sapi/fpm/fpm/fpm_conf
  
  		if (fpm_globals.prefix == NULL) {
 -			spprintf(&tmp, 0, "%s/php-fpm.conf", PHP_SYSCONFDIR);
-+			spprintf(&tmp, 0, "%s/php84-fpm.conf", PHP_SYSCONFDIR);
++			spprintf(&tmp, 0, "%s/php85-fpm.conf", PHP_SYSCONFDIR);
  		} else {
 -			spprintf(&tmp, 0, "%s/etc/php-fpm.conf", fpm_globals.prefix);
-+			spprintf(&tmp, 0, "%s/etc/php84-fpm.conf", fpm_globals.prefix);
++			spprintf(&tmp, 0, "%s/etc/php85-fpm.conf", fpm_globals.prefix);
  		}
  
  		if (!tmp) {
@@ -61,7 +61,7 @@ diff -rup php-8.1.1.orig/sapi/fpm/fpm/fpm_env.h php-8.1.1/sapi/fpm/fpm/fpm_env.h
  #include "fpm_worker_pool.h"
  
 -#define SETPROCTITLE_PREFIX "php-fpm: "
-+#define SETPROCTITLE_PREFIX "php84-fpm: "
++#define SETPROCTITLE_PREFIX "php85-fpm: "
  
  int fpm_env_init_child(struct fpm_worker_pool_s *wp);
  int fpm_env_init_main(void);
@@ -73,7 +73,7 @@ diff -rup php-7.0.8.orig/sapi/fpm/fpm/fpm_main.c php-7.0.8/sapi/fpm/fpm/fpm_main
  {
  	php_info_print_table_start();
 -	php_info_print_table_row(2, "php-fpm", "active");
-+	php_info_print_table_row(2, "php84-fpm", "active");
++	php_info_print_table_row(2, "php85-fpm", "active");
  	php_info_print_table_end();
  
  	DISPLAY_INI_ENTRIES();
@@ -118,7 +118,7 @@ diff -rup php-7.0.8.orig/sapi/fpm/php-fpm.conf.in php-7.0.8/sapi/fpm/php-fpm.con
  ; Note: the default prefix is @EXPANDED_LOCALSTATEDIR@
  ; Default Value: none
 -;pid = run/php-fpm.pid
-+;pid = run/php84-fpm.pid
++;pid = run/php85-fpm.pid
  
  ; Error log file
  ; If it's set to "syslog", log is sent to syslogd instead of being written
@@ -126,8 +126,8 @@ diff -rup php-7.0.8.orig/sapi/fpm/php-fpm.conf.in php-7.0.8/sapi/fpm/php-fpm.con
  ; Note: the default prefix is @EXPANDED_LOCALSTATEDIR@
 -; Default Value: log/php-fpm.log
 -;error_log = log/php-fpm.log
-+; Default Value: log/php84-fpm.log
-+;error_log = log/php84-fpm.log
++; Default Value: log/php85-fpm.log
++;error_log = log/php85-fpm.log
  
  ; syslog_facility is used to specify what type of program is logging the
  ; message. This lets syslogd specify that messages from different facilities
@@ -137,8 +137,8 @@ diff -rup php-7.0.8.orig/sapi/fpm/php-fpm.conf.in php-7.0.8/sapi/fpm/php-fpm.con
  ; which must suit common needs.
 -; Default Value: php-fpm
 -;syslog.ident = php-fpm
-+; Default Value: php84-fpm
-+;syslog.ident = php84-fpm
++; Default Value: php85-fpm
++;syslog.ident = php85-fpm
  
  ; Log level
  ; Possible Values: alert, error, warning, notice, debug
@@ -147,7 +147,7 @@ diff -rup php-7.0.8.orig/sapi/fpm/php-fpm.conf.in php-7.0.8/sapi/fpm/php-fpm.con
  ;  - the global prefix if it's been set (-p argument)
  ;  - @prefix@ otherwise
 -include=@php_fpm_sysconfdir@/php-fpm.d/*.conf
-+include=@php_fpm_sysconfdir@/php84-fpm.d/*.conf
++include=@php_fpm_sysconfdir@/php85-fpm.d/*.conf
 diff -rup php-7.4.0.orig/sapi/fpm/php-fpm.service.in php-7.4.0/sapi/fpm/php-fpm.service.in
 --- php-7.4.0.orig/sapi/fpm/php-fpm.service.in  2019-11-26 20:13:37.000000000 +0000
 +++ php-7.4.0/sapi/fpm/php-fpm.service.in       2019-11-29 22:28:47.649965000 +0000
@@ -157,8 +157,8 @@ diff -rup php-7.4.0.orig/sapi/fpm/php-fpm.service.in php-7.4.0/sapi/fpm/php-fpm.
  Type=@php_fpm_systemd@
 -PIDFile=@EXPANDED_LOCALSTATEDIR@/run/php-fpm.pid
 -ExecStart=@EXPANDED_SBINDIR@/php-fpm --nodaemonize --fpm-config @EXPANDED_SYSCONFDIR@/php-fpm.conf
-+PIDFile=@EXPANDED_LOCALSTATEDIR@/run/php84-fpm.pid
-+ExecStart=@EXPANDED_SBINDIR@/php84-fpm --nodaemonize --fpm-config @EXPANDED_SYSCONFDIR@/php84-fpm.conf
++PIDFile=@EXPANDED_LOCALSTATEDIR@/run/php85-fpm.pid
++ExecStart=@EXPANDED_SBINDIR@/php85-fpm --nodaemonize --fpm-config @EXPANDED_SYSCONFDIR@/php85-fpm.conf
  ExecReload=/bin/kill -USR2 $MAINPID
 
  # Set up a new file system namespace and mounts private /tmp and /var/tmp directories
@@ -170,7 +170,7 @@ diff -rup php-7.0.8.orig/scripts/Makefile.frag php-7.0.8/scripts/Makefile.frag
  #
  
 -phpincludedir = $(includedir)/php
-+phpincludedir = $(includedir)/php84
++phpincludedir = $(includedir)/php85
  phpbuilddir = $(libdir)/build
  
  BUILD_FILES = \
@@ -217,7 +217,7 @@ diff -rup php-7.0.8.orig/scripts/php-config.in php-7.0.8/scripts/php-config.in
  version="@PHP_VERSION@"
  vernum="@PHP_VERSION_ID@"
 -include_dir="@includedir@/php"
-+include_dir="@includedir@/php84"
++include_dir="@includedir@/php85"
  includes="-I$include_dir -I$include_dir/main -I$include_dir/TSRM -I$include_dir/Zend -I$include_dir/ext -I$include_dir/ext/date/lib"
  ldflags="@PHP_LDFLAGS@"
  libs="@EXTRA_LIBS@"
@@ -238,7 +238,7 @@ diff -rup php-7.0.8.orig/scripts/phpize.in php-7.0.8/scripts/phpize.in
  exec_prefix="`eval echo @exec_prefix@`"
  phpdir="`eval echo @libdir@`/build"
 -includedir="`eval echo @includedir@`/php"
-+includedir="`eval echo @includedir@`/php84"
++includedir="`eval echo @includedir@`/php85"
  builddir="`pwd`"
  SED="@SED@"
  

@@ -38,7 +38,6 @@ Fix = bump `Version:` to 8.5.7 and repoint these 8 Patch/Source lines to their 8
 
 - `%changelog` top is `8.4.19-1` (Remi). No `8.5.7-1` entry; `%global rpmrel` still `1`. CI derives image tags from `Version:`+`rpmrel`, so the runtime/dev images would be tagged `8.4.19-1` until the spec is bumped.
 - `rpmbuild/` submodule is **uninitialized** (`git submodule status` shows leading `-`). Needs `git submodule update --init` before the uploader step or any local build.
-- Untracked `root/.cache/` and `root/.local/share/helm/` exist in the parent `windows` repo, unrelated.
 
 ## How to apply
 

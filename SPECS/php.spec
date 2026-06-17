@@ -14,7 +14,6 @@
 %global with_cli 0%{!?_without_cli:1}
 %global with_xml 0%{!?_without_xml:1}
 %global with_pgsql 0%{!?_without_pgsql:1}
-%global with_opcache 0%{!?_without_opcache:1}
 %global with_odbc 0%{!?_without_odbc:1}
 %global with_ldap 0%{!?_without_ldap:1}
 %global with_bcmath 0%{!?_without_bcmath:1}
@@ -90,7 +89,6 @@
 %global php_cli             %{php_main}-cli
 %global php_cgi             %{php_main}-cgi
 %global php_xml             %{php_main}-xml
-%global php_opcache         %{php_main}-opcache
 %global php_bcmath          %{php_main}-bcmath
 %global php_mysql           %{php_main}-mysql
 %global php_mysqlnd         %{php_main}-mysqlnd
@@ -105,12 +103,15 @@
 %global fpm_unit            %{fpm_service}.service
 %global fpm_logrotate       %{fpm_service}
 
-%global apiver      20240924
-%global zendver     20240924
+%global apiver      20250925
+%global zendver     20250925
 %global pdover      20240423
 # Extension version
 %global fileinfover 1.0.5
 %global zipver      1.22.7
+
+# version used for php embedded library soname
+%global major_version 8.5
 
 # we don't want -z defs linker flag
 %undefine _strict_symbol_defs_build
@@ -137,12 +138,25 @@
 %bcond_without         dtrace
 %bcond_without         zip
 
-%global rpmrel 1
+%global rpmrel 2
 %global baserel %{rpmrel}%{?dist}
+
+# liburiparser version 1.0.0 required
+%global liburiparser_minver 1.0.0
+%global liburiparser_bunver 1.0.2
+%if 0%{?fedora} || 0%{?rhel} >= 11
+# use system liburiparser when available
+%bcond_without       liburiparser
+%else
+# use bundled library instead for now
+%bcond_with          liburiparser
+%endif
+
+%global upver        8.5.7
 
 Summary: PHP scripting language for creating dynamic web sites
 Name: %{php_main}
-Version: 8.5.7
+Version: %{upver}
 Release: %{rpmrel}%{?dist}
 
 # All files licensed under PHP version 3.01, except
@@ -152,7 +166,8 @@ Release: %{rpmrel}%{?dist}
 # ext/date/lib is MIT
 # Zend/zend_sort is NCSA
 # Zend/asm is Boost
-License: PHP-3.01 AND Zend-2.0 AND BSD-2-Clause AND MIT AND Apache-1.0 AND NCSA AND BSL-1.0
+# lexbor is Apache-2.0
+License: PHP-3.01 AND Zend-2.0 AND BSD-2-Clause AND MIT AND Apache-1.0 AND Apache-2.0 AND NCSA AND BSL-1.0
 URL: http://www.php.net/
 
 Source0: https://www.php.net/distributions/php-%{version}.tar.xz
@@ -167,7 +182,8 @@ Source9: php.modconf
 Source12: php-fpm.wants
 Source13: nginx-fpm.conf
 Source14: nginx-php.conf
-Source15: php-cgi-fcgi.ini
+Source15: php.tmpfiles
+Source16: php-cgi-fcgi.ini
 
 # See https://secure.php.net/gpg-keys.php
 Source20: https://www.php.net/distributions/php-keyring.gpg
@@ -188,30 +204,32 @@ Source107: php85-php-fpm.logrotate
 Source112: php85-php-fpm.wants
 Source113: php85-nginx-fpm.conf
 Source114: php85-nginx-php.conf
+Source115: php85-php.tmpfiles
 Source150: php85-10-opcache.ini
 Source153: php85-20-ffi.ini
 
 # Build fixes
 Patch1: php-8.4.0-httpd.patch
-Patch5: php-8.4.0-includedir.patch
+Patch5: php-8.5.0-includedir.patch
+Patch6: php-8.5.0-embed.patch
 Patch8: php-8.4.0-libdb.patch
 
 # Functional changes
 # Use system nikic/php-parser
-Patch41: php-8.3.3-parser.patch
+Patch41: php-8.5.0-parser.patch
 # use system tzdata
-Patch42: php-8.4.0-systzdata-v24.patch
+Patch42: php-8.5.0-systzdata-v24.patch
 # See http://bugs.php.net/53436
 # + display PHP version backported from 8.4
 Patch43: php-8.4.0-phpize.patch
 # Use -lldap_r for OpenLDAP
-Patch45: php-8.4.0-ldap_r.patch
+Patch45: php-8.5.0-ldap_r.patch
 # drop "Configure command" from phpinfo output
 # and only use gcc (instead of full version)
 Patch47: php-8.4.0-phpinfo.patch
 # Always warn about missing curve_name
 # Both Fedora and RHEL do not support arbitrary EC parameters
-Patch48: php-8.3.0-openssl-ec-param.patch
+Patch48: php-8.5.0-openssl-ec-param.patch
 
 Patch60: php-5.6.31-no-scan-dir-override.patch
 
@@ -253,6 +271,7 @@ BuildRequires: pkgconfig(icu-uc)   >= 50.1
 BuildRequires: pkgconfig(libcurl) >= 7.29.0
 BuildRequires: pkgconfig(libjpeg)
 BuildRequires: pkgconfig(libpcre2-8) >= 10.30
+BuildRequires: pkgconfig(capstone) >= 3.0
 BuildRequires: pkgconfig(libpng)
 BuildRequires: pkgconfig(libwebp)
 BuildRequires: pkgconfig(libxcrypt)
@@ -263,10 +282,15 @@ BuildRequires: pkgconfig(sqlite3) >= 3.7.4
 BuildRequires: pkgconfig(zlib) >= 1.2.0.4
 BuildRequires: smtpdaemon
 %if %{with dtrace}
-BuildRequires: %{?dtsprefix}systemtap-sdt-devel
-%if 0%{?fedora} >= 41
+BuildRequires: systemtap-sdt-devel
+%if 0%{?fedora} >= 41 || 0%{?rhel} >= 10
 BuildRequires: systemtap-sdt-dtrace
 %endif
+%endif
+%if %{with liburiparser}
+BuildRequires: pkgconfig(liburiparser) >= %{liburiparser_minver}
+%else
+Provides:      bundled(liburiparser) = %{liburiparser_bunver}
 %endif
 BuildRequires: unixODBC-devel
 # used for tests
@@ -296,7 +320,7 @@ non-commercial database management systems, so writing a
 database-enabled webpage with PHP is fairly simple. The most common
 use of PHP coding is probably as a replacement for CGI scripts.
 
-The php package contains the module (often referred to as mod_php)
+The %{name} package contains the module (often referred to as mod_php)
 which adds support for the PHP language to Apache HTTP Server.
 
 %package common
@@ -346,6 +370,12 @@ Provides: bundled(gd) = 2.0.35
 Provides: php-gettext, php-gettext%{?_isa}
 # As of PHP 5.1.2, the Hash extension is bundled and compiled into PHP by default
 Provides: php-hash, php-hash%{?_isa}
+Provides: php-lexbor, php-lexbor%{?_isa}
+# See ext/lexbor/patches/README.md
+%global lexborver 2.7.0
+Provides: bundled(lexbor) = %{lexborver}
+# You need to compile PHP with the --with-mhash parameter to enable this extension
+Provides: php-mhash, php-mhash%{?_isa}
 # This extension is enabled by default
 Provides: php-iconv, php-iconv%{?_isa}
 # extension may be installed using the bundled version as of PHP 5.3.0, --enable-intl will enable the bundled version
@@ -359,14 +389,13 @@ Provides: php-libxml, php-libxml%{?_isa}
 # mbstring is a non-default extension. --enable-mbstring : Enable mbstring functions
 Provides: php-mbstring, php-mbstring%{?_isa}
 # mcrypt extension has been deprecated as of PHP 7.1.0 and moved to PECL as of PHP 7.2.0
-# You need to compile PHP with the --with-mhash parameter to enable this extension
-Provides: php-mhash, php-mhash%{?_isa}
 Provides: php-mysqli%{?_isa} = %{version}-%{baserel}
 Provides: php-mysqli = %{version}-%{baserel}
 # mysql extension was DEPRECATED in PHP 5.5.0, and it was removed in PHP 7.0.0
 # As of 5.4.0 The MySQL Native Driver is now the default for all MySQL extensions
 Provides: php-mysqlnd = %{version}-%{baserel}
 Provides: php-mysqlnd%{?_isa} = %{version}-%{baserel}
+Provides: php-opcache = %{version}, php-opcache%{?_isa} = %{version}
 # To use PHP's OpenSSL support you must also compile PHP --with-openssl
 Provides: php-openssl, php-openssl%{?_isa}
 # core PHP extension, so it is always enabled
@@ -381,10 +410,6 @@ Provides: php(pdo-abi) = %{pdover}%{isasuffix}
 Provides: php-pdo_mysql, php-pdo_mysql%{?_isa}
 # PDO and the PDO_SQLITE driver is enabled by default as of PHP 5.1.0
 Provides: php-pdo_sqlite, php-pdo_sqlite%{?_isa}
-Provides:  php-pecl(json)         = %{version}
-Provides:  php-pecl(json)%{?_isa} = %{version}
-Provides:  php-pecl-json          = %{version}
-Provides:  php-pecl-json%{?_isa}  = %{version}
 # The Phar extension is built into PHP as of PHP version 5.3.0
 Provides: php-phar, php-phar%{?_isa}
 # they are part of the PHP core
@@ -436,7 +461,7 @@ package and the %{php_cli} package.
 
 Summary: Command-line interface for PHP
 # sapi/cli/ps_title.c is PostgreSQL
-License: PHP-3.01 AND Zend-2.0 AND BSD-2-Clause AND MIT AND Apache-1.0 AND NCSA AND PostgreSQL
+License: PHP-3.01 AND Zend-2.0 AND BSD-2-Clause AND MIT AND Apache-1.0 AND Apache-2.0 AND NCSA AND PostgreSQL
 BuildRequires: pkgconfig(libedit)
 Requires: %{php_common}%{?_isa} = %{version}-%{baserel}
 Provides: %{php_cli}%{?_isa} = %{version}-%{baserel}
@@ -444,7 +469,7 @@ Provides: php-pcntl, php-pcntl%{?_isa}
 Provides: php-readline, php-readline%{?_isa}
 
 %description cli
-The php-cli package contains the command-line interface
+The %{php_cli} package contains the command-line interface
 executing PHP scripts, /usr/bin/php.
 %endif
 
@@ -492,34 +517,12 @@ Requires: make
 Requires: openssl-devel%{?_isa} >= 1.0.2
 Requires: pcre2-devel%{?_isa}
 Requires: zlib-devel%{?_isa}
-%if 0%{?fedora} || 0%{?rhel} >= 8
-Recommends: php-nikic-php-parser5 >= 5.0.0
-%endif
+Recommends: php-nikic-php-parser5 >= 5.6.1
 
 %description devel
 The php-devel package contains the files needed for building PHP
 extensions. If you need to compile your own PHP extensions, you will
 need to install this package.
-%endif
-
-%if %{with_opcache}
-%package opcache
-Summary:   The Zend OPcache
-License:   PHP-3.01
-BuildRequires: pkgconfig(capstone) >= 3.0
-Requires: %{php_common}%{?_isa} = %{version}-%{baserel}
-Provides:  php-pecl-zendopcache = %{version}
-Provides:  php-pecl-zendopcache%{?_isa} = %{version}
-Provides:  php-pecl(opcache) = %{version}
-Provides:  php-pecl(opcache)%{?_isa} = %{version}
-%global with_modules 1
-
-%description opcache
-The Zend OPcache provides faster PHP execution through opcode caching and
-optimization. It improves PHP performance by storing precompiled script
-bytecode in the shared memory. This eliminates the stages of reading code from
-the disk and compiling it on future access. In addition, it applies a few
-bytecode optimization patterns that make code execution faster.
 %endif
 
 %if %{with_xml}
@@ -759,6 +762,7 @@ cp ext/mbstring/libmbfl/LICENSE libmbfl_LICENSE
 cp ext/fileinfo/libmagic/LICENSE libmagic_LICENSE
 cp ext/bcmath/libbcmath/LICENSE libbcmath_LICENSE
 cp ext/date/lib/LICENSE.rst timelib_LICENSE
+cp ext/lexbor/LICENSE lexbor_LICENSE
 
 # Multiple builds for multiple SAPIs
 mkdir build-apache
@@ -779,14 +783,11 @@ rm ext/date/tests/timezone_version_get.phpt
 rm ext/date/tests/timezone_version_get_basic1.phpt
 # fails sometime
 rm -f ext/sockets/tests/mcast_ipv?_recv.phpt
-# cause stack exhausion
-rm Zend/tests/bug54268.phpt
-rm Zend/tests/bug68412.phpt
-# tar issue
-rm ext/zlib/tests/004-mb.phpt
 # Both Fedora and RHEL do not support arbitrary EC parameters
 # https://bugzilla.redhat.com/2223953
 rm ext/openssl/tests/ecc_custom_params.phpt
+# Failing when build with PHP installed
+rm ext/opcache/tests/zzz_basic_logging.phpt
 
 # Safety check for API version change.
 pver=$(sed -n '/#define PHP_VERSION /{s/.* "//;s/".*$//;p}' main/php_version.h)
@@ -825,6 +826,22 @@ if test "$ver" != "%{zipver}"; then
    exit 1
 fi
 
+vlexbor=`sed -n '/Lexbor version/{s/.* is //;s/\.$//;p}' ext/lexbor/patches/README.md`
+if test "x${vlexbor}" != "x%{lexborver}"; then
+   : Error: Upstream Lexbor version is now ${vlexbor}, expecting %{lexborver}.
+   : Update the lexborver macro and rebuild.
+   exit 1
+fi
+
+vurimaj=$(sed  -n '/define URI_VER_MAJ/{s/.* //;s/\.$//;p}' ext/uri/uriparser/include/uriparser/UriBase.h)
+vurimin=$(sed  -n '/define URI_VER_MIN/{s/.* //;s/\.$//;p}' ext/uri/uriparser/include/uriparser/UriBase.h)
+vurirel=$(sed  -n '/define URI_VER_REL/{s/.* //;s/\.$//;p}' ext/uri/uriparser/include/uriparser/UriBase.h)
+if test "x${vurimaj}.${vurimin}.${vurirel}" != "x%{liburiparser_bunver}"; then
+   : Error: Upstream uriparser version is now ${vurimaj}.${vurimin}.${vurirel}, expecting %{liburiparser_bunver}.
+   : Update the liburiparser_bunver macro and rebuild.
+   exit 1
+fi
+
 # https://bugs.php.net/63362 - Not needed but installed headers.
 # Drop some Windows specific headers to avoid installation,
 # before build to ensure they are really not needed.
@@ -841,17 +858,10 @@ find . -name \*.[ch] -exec chmod 644 {} \;
 chmod 644 README.*
 
 # Some extensions have their own configuration file
-%if %{with_opcache}
 %if %{with_relocation}
 cat %{SOURCE150} > 10-opcache.ini
 %else
 cat %{SOURCE50} > 10-opcache.ini
-%endif
-
-# according to https://forum.remirepo.net/viewtopic.php?pid=8407#p8407
-%ifarch x86_64
-sed -e '/opcache.huge_code_pages/s/0/1/' -i 10-opcache.ini
-%endif
 %endif
 
 %if %{with_ffi}
@@ -937,8 +947,9 @@ ln -sf ../configure
     --with-config-file-path=%{php_sysconfdir} \
     --with-curl \
     --with-external-pcre \
-%if 0%{?rhel} >= 8
     --with-external-libcrypt \
+%if %{with liburiparser}
+    --with-external-uriparser \
 %endif
     --with-freetype=%{_prefix} \
     --with-gettext \
@@ -970,11 +981,7 @@ ln -sf ../configure
 %else
     --without-sodium \
 %endif
-%if %{with_opcache}
-    --enable-opcache \
-%else
-    --disable-opcache \
-%endif
+    --enable-opcache-file \
 %if %{with_xml}
     --enable-dom=shared \
     --enable-simplexml=shared \
@@ -1034,7 +1041,7 @@ build \
 popd
 %endif
 
-without_shared="--disable-bcmath --disable-dom --disable-opcache \
+without_shared="--disable-bcmath --disable-dom \
       --disable-posix --disable-shmop \
       --disable-simplexml \
       --disable-sysvmsg --disable-sysvsem --disable-sysvshm \
@@ -1160,6 +1167,13 @@ install -m 755 -d $RPM_BUILD_ROOT%{php_libdir}/pear \
 %endif
 %endif
 
+# Install tmpfiles.d file
+%if %{with_relocation}
+install -p -D -m 0644 %{SOURCE115} %{buildroot}%{_tmpfilesdir}/php.conf
+%else
+install -p -D -m 0644 %{SOURCE15} %{buildroot}%{_tmpfilesdir}/php.conf
+%endif
+
 # install the DSO
 install -m 755 -d $RPM_BUILD_ROOT%{_httpd_moddir}
 install -m 755 build-apache/libs/libphp.so $RPM_BUILD_ROOT%{_httpd_moddir}
@@ -1192,7 +1206,7 @@ install -m 755 -d $RPM_BUILD_ROOT%{php_sysconfdir}/php-cgi-fcgi.d
 %if %{with_cgi}
 # install config
 sed "s,@LIBDIR@,%{_libdir},g" \
-    < %{SOURCE15} > php-cgi-fcgi.ini
+    < %{SOURCE16} > php-cgi-fcgi.ini
 install -D -m 644 php-cgi-fcgi.ini \
            $RPM_BUILD_ROOT%{php_sysconfdir}/php-cgi-fcgi.ini
 %endif
@@ -1233,18 +1247,18 @@ install -m 755 -d $RPM_BUILD_ROOT%{_sysconfdir}/systemd/system/%{fpm_service_d}
 install -m 755 -d $RPM_BUILD_ROOT%{_unitdir}
 %if %{with_relocation}
 install -m 644 %{SOURCE106} $RPM_BUILD_ROOT%{_unitdir}/%{fpm_unit}
-install -D -m 644 %{SOURCE112} $RPM_BUILD_ROOT%{_sysconfdir}/systemd/system/httpd.service.d/%{fpm_service}.conf
-install -D -m 644 %{SOURCE112} $RPM_BUILD_ROOT%{_sysconfdir}/systemd/system/nginx.service.d/%{fpm_service}.conf
+install -D -m 644 %{SOURCE112} $RPM_BUILD_ROOT%{_unitdir}/httpd.service.d/%{fpm_service}.conf
+install -D -m 644 %{SOURCE112} $RPM_BUILD_ROOT%{_unitdir}/nginx.service.d/%{fpm_service}.conf
 %else
 install -m 644 %{SOURCE6} $RPM_BUILD_ROOT%{_unitdir}/%{fpm_unit}
-install -D -m 644 %{SOURCE12} $RPM_BUILD_ROOT%{_sysconfdir}/systemd/system/httpd.service.d/%{fpm_service}.conf
-install -D -m 644 %{SOURCE12} $RPM_BUILD_ROOT%{_sysconfdir}/systemd/system/nginx.service.d/%{fpm_service}.conf
+install -D -m 644 %{SOURCE12} $RPM_BUILD_ROOT%{_unitdir}/httpd.service.d/%{fpm_service}.conf
+install -D -m 644 %{SOURCE12} $RPM_BUILD_ROOT%{_unitdir}/nginx.service.d/%{fpm_service}.conf
 %endif
 %endif
 
 TESTCMD="$RPM_BUILD_ROOT%{_bindir}/%{bin_cli} --no-php-ini"
 # Ensure all provided extensions are really there
-for mod in core date filter hash libxml openssl pcre reflection session spl standard zlib
+for mod in core date filter hash json lexbor libxml openssl pcre random reflection session spl standard uri zlib
 do
      $TESTCMD --modules | grep -qi $mod
 done
@@ -1260,9 +1274,7 @@ for mod in \
 %if %{with_xml}
     dom simplexml xmlreader xmlwriter xsl \
 %endif
-%if %{with_opcache}
     opcache \
-%endif
 %if %{with_pgsql}
     pgsql pdo_pgsql \
 %endif
@@ -1290,8 +1302,7 @@ for mod in \
     ; do
     case $mod in
       opcache)
-        # Zend extensions
-        TESTCMD="$TESTCMD --define zend_extension=$mod"
+        # static extension
         ini=10-${mod}.ini;;
       xsl|dom|xmlreader|xmlwriter|simplexml)
         # Extensions with dependencies on 20-*
@@ -1348,10 +1359,9 @@ cat files.shmop files.sysv* files.posix > files.process
 cat files.pdo_pgsql >> files.pgsql
 %endif
 
-%if %{with_opcache}
 # The default Zend OPcache blacklist file
+rm files.opcache
 install -m 644 %{SOURCE51} $RPM_BUILD_ROOT%{php_sysconfdir}/php.d/opcache-default.blacklist
-%endif
 
 %if %{with_devel}
 %if %{with_relocation}
@@ -1415,8 +1425,11 @@ exit 0
 %license libmbfl_LICENSE
 %license libmagic_LICENSE
 %license timelib_LICENSE
+%license lexbor_LICENSE
 %doc php.ini-*
 %config(noreplace) %{php_sysconfdir}/php.ini
+%config(noreplace) %{_sysconfdir}/php.d/10-opcache.ini
+%config(noreplace) %{_sysconfdir}/php.d/opcache-default.blacklist
 %dir %{php_sysconfdir}/php.d
 %dir %{php_sysconfdir}/php-cgi-fcgi.d
 %dir %{php_libdir}
@@ -1430,6 +1443,7 @@ exit 0
 %attr(0770,root,apache) %dir %{php_sharedstatedir}/session
 %attr(0770,root,apache) %dir %{php_sharedstatedir}/wsdlcache
 %attr(0770,root,apache) %dir %{php_sharedstatedir}/opcache
+%{_tmpfilesdir}/php.conf
 %endif
 
 %if %{with_cli}
@@ -1472,8 +1486,8 @@ exit 0
 %config(noreplace) %{_sysconfdir}/logrotate.d/%{fpm_logrotate}
 %dir %{_sysconfdir}/systemd/system/%{fpm_service_d}
 %{_unitdir}/%{fpm_unit}
-%config(noreplace) %{_sysconfdir}/systemd/system/httpd.service.d/%{fpm_service}.conf
-%config(noreplace) %{_sysconfdir}/systemd/system/nginx.service.d/%{fpm_service}.conf
+%config(noreplace) %{_unitdir}/httpd.service.d/%{fpm_service}.conf
+%config(noreplace) %{_unitdir}/nginx.service.d/%{fpm_service}.conf
 %dir %{fpm_config_d}
 # log owned by apache for log
 %attr(770,nginx,root) %dir %{fpm_logdir}
@@ -1499,11 +1513,6 @@ exit 0
 %if %{with_bcmath}
 %files bcmath -f files.bcmath
 %doc libbcmath_LICENSE
-%endif
-
-%if %{with_opcache}
-%files opcache -f files.opcache
-%config(noreplace) %{php_sysconfdir}/php.d/opcache-default.blacklist
 %endif
 
 %if %{with_posix}
@@ -1540,6 +1549,17 @@ exit 0
 %endif
 
 %changelog
+* Thu Jun  4 2026 Remi Collet <remi@remirepo.net> - 8.5.7-2
+- use system liburiparser on RHEL-11
+- bump ABI/API numbers to 20240925
+- drop opcache subpackage, extension is build statically
+- add lexbor and uri extension (always static)
+- move /usr/share/fpm/status.html to /usr/share/php/fpm/status.html
+- add tmpfiles.d configuration file
+
+* Wed Jun  3 2026 Remi Collet <remi@remirepo.net> - 8.5.7-1
+- Update to 8.5.7 - http://www.php.net/releases/8_5_7.php
+
 * Wed Mar 11 2026 Remi Collet <remi@remirepo.net> - 8.4.19-1
 - Update to 8.4.19 - http://www.php.net/releases/8_4_19.php
 
@@ -1746,6 +1766,10 @@ exit 0
 * Wed Aug 28 2019 Remi Collet <remi@remirepo.net> - 7.3.9-1
 - Update to 7.3.9 - http://www.php.net/releases/7_3_9.php
 
+* Wed Jul  3 2019 Remi Collet <remi@remirepo.net> - 7.3.7-2
+- Update to 7.3.7 - http://www.php.net/releases/7_3_7.php
+- disable opcache.huge_code_pages in default configuration
+
 * Wed May  1 2019 Remi Collet <remi@remirepo.net> - 7.3.5-1
 - Update to 7.3.5 - http://www.php.net/releases/7_3_5.php
 
@@ -1847,9 +1871,6 @@ exit 0
 * Wed Nov 22 2017 Alexander Ursu <alexander.ursu@gmail.com> - 7.1.12-1
 - upgrade to 7.1.12
 - added process subpackage
-
-* Mon Oct 02 2017 Alexander Ursu <alexander.ursu@gmail.com> - 7.1.10-2
-- added fix for EL6 for opcache.huge_code_pages
 
 * Mon Oct 02 2017 Alexander Ursu <alexander.ursu@gmail.com> - 7.1.10-1
 - Update to 7.1.10 - http://www.php.net/releases/7_1_10.php
