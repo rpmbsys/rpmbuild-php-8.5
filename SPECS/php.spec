@@ -61,7 +61,6 @@
 %global bin_phpdbg          phpdbg%{program_suffix}
 %global bin_fpm             php%{program_suffix}-fpm
 %global bin_php_config      php%{program_suffix}-config
-%global fpm_datadir         %{_datadir}/php%{program_suffix}-fpm
 %global php_includedir      %{_includedir}/php85
 %else
 %global main_name           php
@@ -80,7 +79,6 @@
 %global bin_phpdbg          phpdbg
 %global bin_fpm             php-fpm
 %global bin_php_config      php-config
-%global fpm_datadir         %{_datadir}/fpm
 %global php_includedir      %{_includedir}/php
 %endif
 
@@ -98,6 +96,7 @@
 %global fpm_sharedstatedir  %{_sharedstatedir}/%{fpm_name}
 %global fpm_logdir          %{_localstatedir}/log/%{fpm_name}
 %global fpm_config          %{php_sysconfdir}/%{fpm_config_name}
+%global fpm_datadir         %{php_datadir}/fpm
 %global fpm_service         %{fpm_name}
 %global fpm_service_d       %{fpm_service}.service.d
 %global fpm_unit            %{fpm_service}.service
@@ -109,9 +108,6 @@
 # Extension version
 %global fileinfover 1.0.5
 %global zipver      1.22.8
-
-# version used for php embedded library soname
-%global major_version 8.5
 
 # we don't want -z defs linker flag
 %undefine _strict_symbol_defs_build
@@ -211,7 +207,6 @@ Source153: php85-20-ffi.ini
 # Build fixes
 Patch1: php-8.4.0-httpd.patch
 Patch5: php-8.5.0-includedir.patch
-Patch6: php-8.5.0-embed.patch
 Patch8: php-8.4.0-libdb.patch
 
 # Functional changes
@@ -1169,7 +1164,7 @@ install -m 755 -d $RPM_BUILD_ROOT%{php_libdir}/pear \
 
 # Install tmpfiles.d file
 %if %{with_relocation}
-install -p -D -m 0644 %{SOURCE115} %{buildroot}%{_tmpfilesdir}/php.conf
+install -p -D -m 0644 %{SOURCE115} %{buildroot}%{_tmpfilesdir}/php%{program_suffix}.conf
 %else
 install -p -D -m 0644 %{SOURCE15} %{buildroot}%{_tmpfilesdir}/php.conf
 %endif
@@ -1443,7 +1438,11 @@ exit 0
 %attr(0770,root,apache) %dir %{php_sharedstatedir}/session
 %attr(0770,root,apache) %dir %{php_sharedstatedir}/wsdlcache
 %attr(0770,root,apache) %dir %{php_sharedstatedir}/opcache
+%if %{with_relocation}
+%{_tmpfilesdir}/php%{program_suffix}.conf
+%else
 %{_tmpfilesdir}/php.conf
+%endif
 %endif
 
 %if %{with_cli}
