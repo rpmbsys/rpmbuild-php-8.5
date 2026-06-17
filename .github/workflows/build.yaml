@@ -6,8 +6,8 @@ env:
   BINTRAY_API_KEY: ${{ secrets.BINTRAY_API_KEY }}
   DOCKER_USER: ${{ secrets.DOCKER_USER }}
   DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
-  BINTRAY_REPO: php84custom
-  SPEC_FILE: SPECS/php84.spec
+  BINTRAY_REPO: php85custom
+  SPEC_FILE: SPECS/php.spec
   RL9: 9.7.20251123
   RL9TAG: 9.7.20251123
   RL10: 10.1.20251126

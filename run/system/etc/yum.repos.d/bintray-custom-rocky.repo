@@ -10,7 +10,7 @@ module_hotfixes=true
 
 [bintray-phpcustom]
 name=bintray-phpcustom
-baseurl=https://rpmb.jfrog.io/artifactory/php84custom/rocky/$releasever/
+baseurl=https://rpmb.jfrog.io/artifactory/php85custom/rocky/$releasever/
 gpgcheck=0
 repo_gpgcheck=0
 enabled=0

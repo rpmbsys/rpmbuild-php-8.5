@@ -4,10 +4,10 @@ services:
       context: .
       args:
         rocky: $RL10
-    image: "aursu/php84build:${RL10TAG}-build"
+    image: "aursu/php85build:${RL10TAG}-build"
   rocky9build:
     build:
       context: .
       args:
         rocky: $RL9
-    image: "aursu/php84build:${RL9TAG}-build"
+    image: "aursu/php85build:${RL9TAG}-build"

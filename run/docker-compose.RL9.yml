@@ -4,18 +4,18 @@ services:
       context: .
       args:
         rocky: $RL9
-    image: "ghcr.io/rpmbsys/php84build:${RL9TAG}-${RUNTAG}"
+    image: "ghcr.io/rpmbsys/php85build:${RL9TAG}-${RUNTAG}"
   rocky9devbase:
     build:
       context: .
       args:
         image: node20dev
         rocky: $RL9
-    image: "ghcr.io/rpmbsys/php84build:${RL9TAG}-devbase"
+    image: "ghcr.io/rpmbsys/php85build:${RL9TAG}-devbase"
   rocky9dev2base:
     build:
       context: .
       args:
         image: node22dev
         rocky: $RL9
-    image: "ghcr.io/rpmbsys/php84build:${RL9TAG}-dev2base"
+    image: "ghcr.io/rpmbsys/php85build:${RL9TAG}-dev2base"
