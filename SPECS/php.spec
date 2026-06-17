@@ -44,16 +44,16 @@
 %global with_relocation 0%{?_with_relocation:1}
 
 %if %{with_relocation}
-%global program_suffix      84
-%global main_name           php84
-%global fpm_name            php84-fpm
-%global php_sysconfdir      %{_sysconfdir}/php84
-%global php_datadir         %{_datadir}/php84
+%global program_suffix      85
+%global main_name           php85
+%global fpm_name            php85-fpm
+%global php_sysconfdir      %{_sysconfdir}/php85
+%global php_datadir         %{_datadir}/php85
 %global pear_datadir        %{php_datadir}/pear
-%global php_docdir          %{_docdir}/php84
+%global php_docdir          %{_docdir}/php85
 %global tests_datadir       %{php_datadir}/tests
 # configured by relocation patch (in other words - hardcoded)
-%global fpm_config_name     php84-fpm.conf
+%global fpm_config_name     php85-fpm.conf
 %global fpm_config_d        %{php_sysconfdir}/php%{program_suffix}-fpm.d
 %global bin_phar            phar%{program_suffix}
 %global bin_cli             php%{program_suffix}
@@ -63,7 +63,7 @@
 %global bin_fpm             php%{program_suffix}-fpm
 %global bin_php_config      php%{program_suffix}-config
 %global fpm_datadir         %{_datadir}/php%{program_suffix}-fpm
-%global php_includedir      %{_includedir}/php84
+%global php_includedir      %{_includedir}/php85
 %else
 %global main_name           php
 %global fpm_name            php-fpm
@@ -142,7 +142,7 @@
 
 Summary: PHP scripting language for creating dynamic web sites
 Name: %{php_main}
-Version: 8.4.19
+Version: 8.5.7
 Release: %{rpmrel}%{?dist}
 
 # All files licensed under PHP version 3.01, except
@@ -179,17 +179,17 @@ Source51: opcache-default.blacklist
 Source53: 20-ffi.ini
 
 # relocation resources
-Source101: php84-php.conf
-Source103: php84-macros.php
-Source104: php84-php-fpm.conf
-Source105: php84-php-fpm-www.conf
-Source106: php84-php-fpm.service
-Source107: php84-php-fpm.logrotate
-Source112: php84-php-fpm.wants
-Source113: php84-nginx-fpm.conf
-Source114: php84-nginx-php.conf
-Source150: php84-10-opcache.ini
-Source153: php84-20-ffi.ini
+Source101: php85-php.conf
+Source103: php85-macros.php
+Source104: php85-php-fpm.conf
+Source105: php85-php-fpm-www.conf
+Source106: php85-php-fpm.service
+Source107: php85-php-fpm.logrotate
+Source112: php85-php-fpm.wants
+Source113: php85-nginx-fpm.conf
+Source114: php85-nginx-php.conf
+Source150: php85-10-opcache.ini
+Source153: php85-20-ffi.ini
 
 # Build fixes
 Patch1: php-8.4.0-httpd.patch
@@ -224,7 +224,7 @@ Patch60: php-5.6.31-no-scan-dir-override.patch
 Patch300: php-7.4.0-datetests.patch
 
 # relocation (400+)
-Patch405: php84-php-7.2.0-includedir.patch
+Patch405: php85-php-7.2.0-includedir.patch
 Patch409: php-7.0.8-relocation.patch
 
 BuildRequires: autoconf >= 2.64
