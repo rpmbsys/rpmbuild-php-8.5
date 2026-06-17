@@ -237,7 +237,7 @@ Patch60: php-5.6.31-no-scan-dir-override.patch
 Patch300: php-7.4.0-datetests.patch
 
 # relocation (400+)
-Patch405: php85-php-7.2.0-includedir.patch
+Patch405: php85-php-8.5.0-includedir.patch
 Patch409: php-7.0.8-relocation.patch
 
 BuildRequires: autoconf >= 2.64
