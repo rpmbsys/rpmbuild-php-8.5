@@ -39,8 +39,20 @@ Fix = bump `Version:` to 8.5.7 and repoint these 8 Patch/Source lines to their 8
 - `%changelog` top is `8.4.19-1` (Remi). No `8.5.7-1` entry; `%global rpmrel` still `1`. CI derives image tags from `Version:`+`rpmrel`, so the runtime/dev images would be tagged `8.4.19-1` until the spec is bumped.
 - `rpmbuild/` submodule is **uninitialized** (`git submodule status` shows leading `-`). Needs `git submodule update --init` before the uploader step or any local build.
 
+## Resolution (2026-06-17, same session)
+
+The operator worked through the findings and they are now **resolved**:
+- `Version` → `%global upver 8.5.7` / `Version: %{upver}`; Source0/21 resolve to the real tarball + `.asc`.
+- All Sev-1 patch/source refs repointed to `php-8.5.0-*` / `php85-*`; the relocation block fully renamed (`program_suffix 85`, `main_name php85`, all `php85-*` sources incl. `php85-php-7.2.0-includedir.patch`).
+- `apiver`/`zendver` = `20250925`, `pdover` = `20240423` — **verified against the 8.5.7 tarball** (`main/php.h`, `Zend/zend_modules.h`, `ext/pdo/php_pdo_driver.h`).
+- `php.tmpfiles` wired (Source15 base / Source115 relocation); relocation installs/owns `php%{program_suffix}.conf` so `php85`+`php84` co-install cleanly.
+- `php-8.5.0-embed.patch` removed (file + `Patch6:` decl) — this fork doesn't build the embed SAPI, and the 8.4 base never applied it. Patch decl/apply sets now match.
+- `major_version` / `%bcond_with rename` removed as unused (this fork's relocation = rename only).
+- New `8.5.7-1` changelog entry added; history preserved.
+
+**Remaining (cosmetic only):** 4 patches keep `php-8.4.0-*` filenames (Patch1 httpd, Patch8 libdb, Patch43 phpize, Patch47 phpinfo) — referenced and present, content-identical, so functional; rename to `php-8.5.0-*` is optional tidiness. **Not yet built** — spec is consistent but an actual `docker compose` build run is the next validation step.
+
 ## How to apply
 
-- Before ANY build attempt: bump `Version:`→8.5.7, repoint the 8 Sev-1 refs, decide on `php-8.5.0-embed.patch` + `php.tmpfiles`, add a changelog entry.
-- The cleanest reference for what a *fully* renamed sibling looks like is `../rpmbuild-php-8.3` (`php83.spec`) and `../rpmbuild-php-8.4` (the copy source). Diff `php.spec` against `../rpmbuild-php-8.4/SPECS/php84.spec` to see exactly what the copy changed (answer: only the filename).
-- User chose **audit-report-only** for the 2026-06-17 pass — fixes were NOT applied. Re-confirm scope before editing the spec.
+- The cleanest reference for a *fully* renamed sibling is `../rpmbuild-php-8.3` (`php83.spec`) and `../rpmbuild-php-8.4` (the copy source).
+- Spec is now buildable on paper; next step is the local build (`docker compose -f docker-compose.base.yml build rocky10base` → `docker compose build rocky10build` → `docker compose up --exit-code-from rocky10build rocky10build`) after `git submodule update --init`.

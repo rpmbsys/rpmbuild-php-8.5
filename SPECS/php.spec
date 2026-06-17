@@ -721,7 +721,7 @@ possibility to act as a socket server as well as a client.
 %patch -P1 -p1 -b .mpmcheck
 
 %if %{with_relocation}
-%patch405 -p1
+%patch -P405 -p1
 %else
 %patch -P5 -p1 -b .includedir
 %endif
@@ -729,7 +729,7 @@ possibility to act as a socket server as well as a client.
 %patch -P8 -p1 -b .libdb
 
 %if %{with_relocation}
-%patch409 -p1
+%patch -P409 -p1
 %endif
 
 %patch -P41 -p1 -b .syslib
