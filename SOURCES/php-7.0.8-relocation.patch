@@ -7,19 +7,19 @@ diff -rup php-7.0.8.orig/ext/pdo/Makefile.frag php-7.0.8/ext/pdo/Makefile.frag
  
  PDO_HEADER_FILES= \
  	php_pdo.h \
-diff -rup php-7.0.8.orig/sapi/cgi/Makefile.frag php-7.0.8/sapi/cgi/Makefile.frag
---- php-7.0.8.orig/sapi/cgi/Makefile.frag	2016-06-21 21:56:42.000000000 +0200
-+++ php-7.0.8/sapi/cgi/Makefile.frag	2016-07-21 15:16:46.685000000 +0200
+diff -rup php-8.5.7.orig/sapi/cgi/Makefile.frag php-8.5.7/sapi/cgi/Makefile.frag
+--- php-8.5.7.orig/sapi/cgi/Makefile.frag       2026-06-02 20:59:56.000000000 +0000
++++ php-8.5.7/sapi/cgi/Makefile.frag    2026-06-17 15:53:21.698114964 +0000
 @@ -6,7 +6,7 @@ $(SAPI_CGI_PATH): $(PHP_GLOBAL_OBJS) $(P
  install-cgi: $(SAPI_CGI_PATH)
- 	@echo "Installing PHP CGI binary:        $(INSTALL_ROOT)$(bindir)/"
- 	@$(mkinstalldirs) $(INSTALL_ROOT)$(bindir)
--	@$(INSTALL) -m 0755 $(SAPI_CGI_PATH) $(INSTALL_ROOT)$(bindir)/$(program_prefix)php-cgi$(program_suffix)$(EXEEXT)
-+	@$(INSTALL) -m 0755 $(SAPI_CGI_PATH) $(INSTALL_ROOT)$(bindir)/$(program_prefix)php$(program_suffix)-cgi$(EXEEXT)
- 	@echo "Installing PHP CGI man page:      $(INSTALL_ROOT)$(mandir)/man1/"
- 	@$(mkinstalldirs) $(INSTALL_ROOT)$(mandir)/man1
--	@$(INSTALL_DATA) sapi/cgi/php-cgi.1 $(INSTALL_ROOT)$(mandir)/man1/$(program_prefix)php-cgi$(program_suffix).1
-+	@$(INSTALL_DATA) sapi/cgi/php-cgi.1 $(INSTALL_ROOT)$(mandir)/man1/$(program_prefix)php$(program_suffix)-cgi.1
+        @echo "Installing PHP CGI binary:        $(INSTALL_ROOT)$(bindir)/"
+        @$(mkinstalldirs) $(INSTALL_ROOT)$(bindir)
+-       @$(LIBTOOL) --mode=install $(INSTALL) -m 0755 $(SAPI_CGI_PATH) $(INSTALL_ROOT)$(bindir)/$(program_prefix)php-cgi$(program_suffix)$(EXEEXT)
++       @$(LIBTOOL) --mode=install $(INSTALL) -m 0755 $(SAPI_CGI_PATH) $(INSTALL_ROOT)$(bindir)/$(program_prefix)php$(program_suffix)-cgi$(EXEEXT)
+        @echo "Installing PHP CGI man page:      $(INSTALL_ROOT)$(mandir)/man1/"
+        @$(mkinstalldirs) $(INSTALL_ROOT)$(mandir)/man1
+-       @$(INSTALL_DATA) sapi/cgi/php-cgi.1 $(INSTALL_ROOT)$(mandir)/man1/$(program_prefix)php-cgi$(program_suffix).1
++       @$(INSTALL_DATA) sapi/cgi/php-cgi.1 $(INSTALL_ROOT)$(mandir)/man1/$(program_prefix)php$(program_suffix)-cgi.1
 diff -rup php-7.0.8.orig/sapi/fpm/fpm/fpm_conf.c php-7.0.8/sapi/fpm/fpm/fpm_conf.c
 --- php-7.0.8.orig/sapi/fpm/fpm/fpm_conf.c	2016-06-21 21:56:41.000000000 +0200
 +++ php-7.0.8/sapi/fpm/fpm/fpm_conf.c	2016-07-21 17:44:01.150000000 +0200
@@ -77,39 +77,36 @@ diff -rup php-7.0.8.orig/sapi/fpm/fpm/fpm_main.c php-7.0.8/sapi/fpm/fpm/fpm_main
  	php_info_print_table_end();
  
  	DISPLAY_INI_ENTRIES();
-diff -rup php-7.0.8.orig/sapi/fpm/Makefile.frag php-7.0.8/sapi/fpm/Makefile.frag
---- php-7.0.8.orig/sapi/fpm/Makefile.frag	2016-06-21 21:56:41.000000000 +0200
-+++ php-7.0.8/sapi/fpm/Makefile.frag	2016-07-21 17:38:52.697000000 +0200
-@@ -8,21 +8,21 @@ install-fpm: $(SAPI_FPM_PATH)
- 	@$(mkinstalldirs) $(INSTALL_ROOT)$(sbindir)
- 	@$(mkinstalldirs) $(INSTALL_ROOT)$(localstatedir)/log
- 	@$(mkinstalldirs) $(INSTALL_ROOT)$(localstatedir)/run
--	@$(INSTALL) -m 0755 $(SAPI_FPM_PATH) $(INSTALL_ROOT)$(sbindir)/$(program_prefix)php-fpm$(program_suffix)$(EXEEXT)
-+	@$(INSTALL) -m 0755 $(SAPI_FPM_PATH) $(INSTALL_ROOT)$(sbindir)/$(program_prefix)php$(program_suffix)-fpm$(EXEEXT)
- 
- 	@if test -f "$(INSTALL_ROOT)$(sysconfdir)/php-fpm.conf"; then \
- 		echo "Installing PHP FPM defconfig:     skipping"; \
- 	else \
- 		echo "Installing PHP FPM defconfig:     $(INSTALL_ROOT)$(sysconfdir)/" && \
--		$(mkinstalldirs) $(INSTALL_ROOT)$(sysconfdir)/php-fpm.d; \
--		$(INSTALL_DATA) sapi/fpm/php-fpm.conf $(INSTALL_ROOT)$(sysconfdir)/php-fpm.conf.default; \
--		$(INSTALL_DATA) sapi/fpm/www.conf $(INSTALL_ROOT)$(sysconfdir)/php-fpm.d/www.conf.default; \
-+		$(mkinstalldirs) $(INSTALL_ROOT)$(sysconfdir)/php$(program_suffix)-fpm.d; \
-+		$(INSTALL_DATA) sapi/fpm/php-fpm.conf $(INSTALL_ROOT)$(sysconfdir)/php$(program_suffix)-fpm.conf.default; \
-+		$(INSTALL_DATA) sapi/fpm/www.conf $(INSTALL_ROOT)$(sysconfdir)/php$(program_suffix)-fpm.d/www.conf.default; \
- 	fi
- 
- 	@echo "Installing PHP FPM man page:      $(INSTALL_ROOT)$(mandir)/man8/"
- 	@$(mkinstalldirs) $(INSTALL_ROOT)$(mandir)/man8
--	@$(INSTALL_DATA) sapi/fpm/php-fpm.8 $(INSTALL_ROOT)$(mandir)/man8/php-fpm$(program_suffix).8
-+	@$(INSTALL_DATA) sapi/fpm/php-fpm.8 $(INSTALL_ROOT)$(mandir)/man8/php$(program_suffix)-fpm.8
- 
--	@echo "Installing PHP FPM status page:   $(INSTALL_ROOT)$(datadir)/fpm/"
--	@$(mkinstalldirs) $(INSTALL_ROOT)$(datadir)/fpm
--	@$(INSTALL_DATA) sapi/fpm/status.html $(INSTALL_ROOT)$(datadir)/fpm/status.html
-+	@echo "Installing PHP FPM status page:   $(INSTALL_ROOT)$(datadir)/php$(program_suffix)-fpm/"
-+	@$(mkinstalldirs) $(INSTALL_ROOT)$(datadir)/php$(program_suffix)-fpm
-+	@$(INSTALL_DATA) sapi/fpm/status.html $(INSTALL_ROOT)$(datadir)/php$(program_suffix)-fpm/status.html
+diff -rup php-8.5.7.orig/sapi/fpm/Makefile.frag php-8.5.7/sapi/fpm/Makefile.frag
+--- php-8.5.7.orig/sapi/fpm/Makefile.frag       2026-06-02 20:59:56.000000000 +0000
++++ php-8.5.7/sapi/fpm/Makefile.frag    2026-06-17 16:00:49.175228632 +0000
+@@ -8,20 +8,20 @@ install-fpm: $(SAPI_FPM_PATH)
+        @$(mkinstalldirs) $(INSTALL_ROOT)$(sbindir)
+        @$(mkinstalldirs) $(INSTALL_ROOT)$(localstatedir)/log
+        @$(mkinstalldirs) $(INSTALL_ROOT)$(localstatedir)/run
+-       @$(LIBTOOL) --mode=install $(INSTALL) -m 0755 $(SAPI_FPM_PATH) $(INSTALL_ROOT)$(sbindir)/$(program_prefix)php-fpm$(program_suffix)$(EXEEXT)
++       @$(LIBTOOL) --mode=install $(INSTALL) -m 0755 $(SAPI_FPM_PATH) $(INSTALL_ROOT)$(sbindir)/$(program_prefix)php$(program_suffix)-fpm$(EXEEXT)
+
+-       @if test -f "$(INSTALL_ROOT)$(sysconfdir)/php-fpm.conf"; then \
++       @if test -f "$(INSTALL_ROOT)$(sysconfdir)/php$(program_suffix)-fpm.conf"; then \
+                echo "Installing PHP FPM defconfig:     skipping"; \
+        else \
+                echo "Installing PHP FPM defconfig:     $(INSTALL_ROOT)$(sysconfdir)/" && \
+-               $(mkinstalldirs) $(INSTALL_ROOT)$(sysconfdir)/php-fpm.d; \
+-               $(INSTALL_DATA) sapi/fpm/php-fpm.conf $(INSTALL_ROOT)$(sysconfdir)/php-fpm.conf.default; \
+-               $(INSTALL_DATA) sapi/fpm/www.conf $(INSTALL_ROOT)$(sysconfdir)/php-fpm.d/www.conf.default; \
++               $(mkinstalldirs) $(INSTALL_ROOT)$(sysconfdir)/php$(program_suffix)-fpm.d; \
++               $(INSTALL_DATA) sapi/fpm/php-fpm.conf $(INSTALL_ROOT)$(sysconfdir)/php$(program_suffix)-fpm.conf.default; \
++               $(INSTALL_DATA) sapi/fpm/www.conf $(INSTALL_ROOT)$(sysconfdir)/php$(program_suffix)-fpm.d/www.conf.default; \
+        fi
+
+        @echo "Installing PHP FPM man page:      $(INSTALL_ROOT)$(mandir)/man8/"
+        @$(mkinstalldirs) $(INSTALL_ROOT)$(mandir)/man8
+-       @$(INSTALL_DATA) sapi/fpm/php-fpm.8 $(INSTALL_ROOT)$(mandir)/man8/php-fpm$(program_suffix).8
++       @$(INSTALL_DATA) sapi/fpm/php-fpm.8 $(INSTALL_ROOT)$(mandir)/man8/php$(program_suffix)-fpm.8
+
+        @echo "Installing PHP FPM status page:   $(INSTALL_ROOT)$(datadir)/fpm/"
+        @$(mkinstalldirs) $(INSTALL_ROOT)$(datadir)/fpm
 diff -rup php-7.0.8.orig/sapi/fpm/php-fpm.conf.in php-7.0.8/sapi/fpm/php-fpm.conf.in
 --- php-7.0.8.orig/sapi/fpm/php-fpm.conf.in	2016-06-21 21:56:41.000000000 +0200
 +++ php-7.0.8/sapi/fpm/php-fpm.conf.in	2016-07-21 17:45:43.922000000 +0200
