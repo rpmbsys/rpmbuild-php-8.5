@@ -134,7 +134,7 @@
 %bcond_without         dtrace
 %bcond_without         zip
 
-%global rpmrel 2
+%global rpmrel 3
 %global baserel %{rpmrel}%{?dist}
 
 # liburiparser version 1.0.0 required
@@ -1536,6 +1536,13 @@ exit 0
 %endif
 
 %changelog
+* Thu Jun 18 2026 Alexander Ursu <alexander.ursu@gmail.com> - 8.5.7-3
+- drop ext/dba and Berkeley DB (db4) support (removes php-dba; drops libdb/gdbm build deps)
+- drop deprecated --with-mhash (mhash deprecated since 8.1; removes php-mhash)
+- mod_php now Conflicts across PHP versions (httpd loads a single php_module)
+- relocation: ship tmpfiles.d as php<suffix>.conf so php85/php84 co-install
+- drop unused "system nikic/php-parser" build patch
+
 * Thu Jun  4 2026 Remi Collet <remi@remirepo.net> - 8.5.7-2
 - use system liburiparser on RHEL-11
 - bump ABI/API numbers to 20240925

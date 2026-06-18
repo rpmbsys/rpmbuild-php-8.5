@@ -1,0 +1,10 @@
+---
+name: Public RPM changelog author identity
+description: %changelog entries in the rpmbuild-* spec files must be authored as Alexander Ursu <alexander.ursu@gmail.com> — NOT the private work email configured in git — because the changelog ships inside the RPM and these are public, vendor-neutral repos.
+type: feedback
+---
+Use **`Alexander Ursu <alexander.ursu@gmail.com>`** as the `%changelog` author for new entries in this (and sibling `rpmbuild-*`) spec files.
+
+**Why:** the `%changelog` author line is embedded in the built RPM and is visible to every consumer via `rpm -q --changelog`. These repos are public and vendor-neutral, so the **private work email configured in git** (a corporate address) must **not** appear there — it would leak a company reference. Use the public gmail identity instead. (Confirmed by the operator 2026-06-18 when adding the 8.5.7-3 entry.)
+
+**How to apply:** when bumping `%global rpmrel` for a local packaging change, add the dated entry with this identity and the correct weekday. Upstream entries (Remi Collet) are left as-is; only new *local* entries use this identity. See [[review-8.5-assets]] for the kind of changes that warrant a release bump.

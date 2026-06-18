@@ -2,6 +2,7 @@
 
 One line per memory. Read the linked file for detail. See [`../CLAUDE.md`](../CLAUDE.md) for repo overview.
 
+- [Public RPM changelog author identity](changelog-author-identity.md) — new %changelog entries use Alexander Ursu <alexander.ursu@gmail.com>, never the private work email configured in git (ships in the RPM; repos are public/vendor-neutral).
 - [Upstream PHP reference links](upstream-php-references.md) — curated index of authoritative upstream sources (externals.io threads, official changelog/INI docs, in-tree UPGRADING/NEWS) backing build decisions. Seeded with the max_memory_limit ML thread (externals.io/message/127108).
 - [php.ini max_memory_limit is NEW in 8.5](ini-max_memory_limit.md) — keep it; it's a legitimate new 8.5.0 startup-only cap on memory_limit (verified vs source), not a removed/bogus directive.
 - [8.5 assets relevance review](review-8.5-assets.md) — patches/spec-settings/config/extensions reviewed for 8.5 currency + top-20 framework coverage (2026-06-18). Coverage excellent; action items: drop dba/db4, verify ldap_r + --with-mhash, re-eval system-php-parser patch, remove bogus max_memory_limit ini line.
