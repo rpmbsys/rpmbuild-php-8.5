@@ -24,6 +24,7 @@ An administrator-set **hard ceiling** on what `memory_limit` may be raised to (a
 - PHP source `UPGRADING` (8.5): *"Added startup-only `max_memory_limit` INI setting to control the maximum `memory_limit` that may be configured at startup or runtime. Exceeding this value emits a warning, unless set to -1, and sets `memory_limit` to the current `max_memory_limit` instead."* — ML discussion: https://externals.io/message/127108
 - Official changelog: https://www.php.net/ChangeLog-8.php (8.5.0 entries)
 - Core INI directives reference: https://www.php.net/manual/en/ini.core.php
+- Collected in the link index: [[upstream-php-references]]
 
 ## Note
 
