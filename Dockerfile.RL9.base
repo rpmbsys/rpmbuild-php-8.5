@@ -24,7 +24,6 @@ RUN dnf -y install \
         libxml2-devel \
         libxslt-devel \
         libzip-devel \
-        mysql-devel \
         nginx-filesystem \
         oniguruma-devel \
         openldap-devel \
