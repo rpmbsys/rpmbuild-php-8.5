@@ -15,6 +15,14 @@ This repo (`rpmbuild-php-8.5`) builds the **base PHP 8.5 RPMs**. Sitting next to
 
 `php-pear` (`../rpmbuild-php-pear`, `build/phpNN/`) → apcu → igbinary → msgpack → … The repos that carry their own `build/phpNN/` subdirs (Dockerfile + docker-compose.yml publishing `aursu/pearbuild:` / `aursu/peclbuild:` base tags) are: **pear, apcu, igbinary, msgpack**. The other extensions just consume those bases through their top-level `image:` arg.
 
+**Inter-extension dependency edges** (each downstream build's `image:` FROMs an upstream extension's published peclbuild tag):
+- **msgpack depends on igbinary** (FROMs the igbinary peclbuild base; msgpack also BuildRequires igbinary).
+- **redis6 and memcached depend on msgpack** (FROM the msgpack peclbuild base).
+- apcu and igbinary build on the pear/`php` base.
+- Build/pull order: **pear → apcu/igbinary → msgpack → {memcached, redis6}**.
+
+**Cascade failure (observed 2026-06-18):** these bases are *pulled*, not rebuilt, at each step. If an upstream extension's image isn't published, every downstream build fails at `docker pull` of the missing base — NOT because of its own code. When igbinary's 8.5 build failed (source incompat — see [[pecl-spec-php-devel-cap]]), `peclbuild:…-php-igbinary-8.5` was never pushed, so msgpack, then redis6 + memcached, all "failed" on 8.5 solely for lack of a base image. **Before treating a downstream extension's failure as its own bug, check whether its base image actually exists.** Fix is to build+publish the chain in order, then re-run the downstream repos.
+
 ## Adding / dropping a PHP version (mechanical)
 
 - New `docker-compose.phpNN.yml` = copy the highest existing version's file and bump, e.g. `s/php85/php86/g; s/8\.5/8.6/g` (covers both `phpNNbuild` and `-8.N` tag forms).
