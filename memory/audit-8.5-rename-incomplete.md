@@ -52,6 +52,15 @@ The operator worked through the findings and they are now **resolved**:
 
 **Remaining (cosmetic only):** 4 patches keep `php-8.4.0-*` filenames (Patch1 httpd, Patch8 libdb, Patch43 phpize, Patch47 phpinfo) — referenced and present, content-identical, so functional; rename to `php-8.5.0-*` is optional tidiness. **Not yet built** — spec is consistent but an actual `docker compose` build run is the next validation step.
 
+## Relocation-patch verification (2026-06-18)
+
+Audited the `--with relocation` path specifically:
+- **`%patch405` / `%patch409` used the removed old-style syntax** → fixed to `%patch -P405` / `%patch -P409`. The old `%patchN` form errors on rpm 4.18+ (Rocky 10 = rpm 4.20); every `%patch` in the spec is now uniform `-P`.
+- `Patch405` renamed to `php85-php-8.5.0-includedir.patch` (spec + file agree).
+- **TAB hazard (important):** `php-7.0.8-relocation.patch` had all literal TABs stripped (an easy Windows-editing artifact), so its `Makefile.frag` / `.c` hunks silently failed to apply (space≠tab context mismatch) while the no-indent hunks passed. Operator restored the tabs (83 tab-lines). **When editing any patch in `SOURCES/`, preserve literal TABs** or tab-indented hunks break. The `includedir`/`configure.ac` patches are immune (autoconf is space-indented).
+- **Verified end-to-end:** the full `%prep` patch sequence applies cleanly at **fuzz=0** for BOTH the default build and the relocation build (2026-06-18).
+- **Why this stayed hidden:** CI (`build.yaml`) only builds the default `rocky10build`/`rocky9build`; the `rocky10buildreloc` service is **never invoked**. The operator builds the relocation (`php85`-suffixed) variant **manually**, so relocation breakage never surfaces in CI — verify it by hand after touching any relocation source/patch.
+
 ## How to apply
 
 - The cleanest reference for a *fully* renamed sibling is `../rpmbuild-php-8.3` (`php83.spec`) and `../rpmbuild-php-8.4` (the copy source).
