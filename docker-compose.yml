@@ -2,6 +2,7 @@ services:
   rocky10build:
     volumes:
       - rpm10rocky:/home/centos/rpmbuild/RPMS
+      - ccache10rocky:/home/centos/.ccache
     build:
       context: .
       args:
@@ -10,6 +11,7 @@ services:
     command: ["-ba", "--with", "relocation"]
     volumes:
       - rpm10rocky:/home/centos/rpmbuild/RPMS
+      - ccache10rocky:/home/centos/.ccache
     build:
       context: .
       args:
@@ -18,3 +20,5 @@ services:
 volumes:
   rpm10rocky:
     name: rpm10rocky
+  ccache10rocky:
+    name: ccache10rocky

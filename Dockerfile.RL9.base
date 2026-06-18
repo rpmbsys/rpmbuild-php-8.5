@@ -5,6 +5,7 @@ USER root
 RUN dnf -y install \
         bzip2-devel \
         capstone-devel \
+        ccache \
         cyrus-sasl-devel \
         freetype-devel \
         httpd-devel \
@@ -38,3 +39,11 @@ RUN dnf -y install \
         unixODBC-devel \
         zlib-devel \
     && dnf clean all && rm -rf /var/cache/dnf /var/lib/rpm/__db*
+
+# ccache: prepend the compiler wrappers to PATH and keep the cache in the build
+# user's home, so a mounted named volume inherits its ownership. Speeds up the
+# four SAPI compiles (apache/cli/cgi/fpm, same sources) and iterative rebuilds.
+ENV CCACHE_DIR=/home/centos/.ccache \
+    CCACHE_MAXSIZE=3G \
+    PATH=/usr/lib64/ccache:$PATH
+RUN mkdir -p "$CCACHE_DIR" && chown "$BUILD_USER" "$CCACHE_DIR"

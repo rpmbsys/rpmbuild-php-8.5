@@ -11,9 +11,11 @@ type: project
   - **Win:** smaller/faster base image, fewer build deps, and removes reliance on the custom `mysql8.4-devel` package.
   - **Matching spec cleanup:** dropped the now-dead `%global mysql_config` macro + comment (never referenced; pointed at a binary no longer installed) and replaced the `%(mysql_config --socket || echo …)` detection with the literal `%global mysql_sock /var/lib/mysql/mysql.sock` (the fallback it would always hit now). `%{mysql_sock}` is still used at `--with-mysql-sock`. The spec has **no** mysql/mariadb `BuildRequires`, so the build doesn't fail without the dev package.
 
-## Candidate (not yet applied — operator decision)
+- **ccache wired in** (2026-06-18): `ccache` installed in `Dockerfile.base` + `Dockerfile.RL9.base`; `ENV PATH=/usr/lib64/ccache:$PATH` (RHEL ccache compiler wrappers), `CCACHE_DIR=/home/centos/.ccache` (build user's home, `chown $BUILD_USER` so a named volume inherits ownership), `CCACHE_MAXSIZE=3G`. Persistent cache volumes added to compose: `ccache10rocky` (docker-compose.yml) and `ccache9rocky` (docker-compose.RL9.yml), shared by the `*build` and `*buildreloc` services.
+  - **Win:** within one rpmbuild the 4 SAPI passes (apache/cli/cgi/fpm) compile the same sources → ~3 of 4 core compiles become cache hits; across runs (volume-persisted) iterative spec-tuning rebuilds are near-instant for unchanged TUs. CI runners get the within-build win only (fresh volume each run).
+  - **No spec change needed** — PATH wiring routes `gcc`/`g++` through the ccache wrappers transparently; `%configure` detects them as the compiler.
 
-- **ccache** — not used today. The four SAPI builds (apache/cli/cgi/fpm) each compile the PHP core from the same sources; ccache turns repeats + iterative rebuilds into cache hits. Needs `ccache` in the `aursu/rpmbuild` base + CC/PATH wiring. Biggest speedup for the manual build loop.
+## Candidate (not yet applied — operator decision)
 - **opcache JIT** — not configured (off). Capstone is built so JIT is available; `opcache.jit=tracing` + `opcache.jit_buffer_size` helps CLI/compute, ~neutral for typical web. Keep off by default; document as a per-deployment tunable.
 - **`pcre.jit=0`** (SOURCES/php.ini) — disabled long ago for an SELinux AVC; likely fixed now, re-enabling is a small free regex win (verify SELinux first).
 
