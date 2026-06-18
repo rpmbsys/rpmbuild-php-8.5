@@ -9,6 +9,7 @@ type: project
   - **Why safe:** the spec builds with `--with-mysqli=mysqlnd` and `--with-pdo-mysql=mysqlnd` (php.spec ~943–944). **mysqlnd is the bundled native driver — it does not link `libmysqlclient`**, so no MySQL client dev package is needed to compile. The only consumer of `mysql_config` is the socket-path default `%global mysql_sock %(mysql_config --socket 2>/dev/null || echo /var/lib/mysql/mysql.sock)` (php.spec ~122), which falls back gracefully.
   - **Only effect:** the compiled-in default socket becomes `/var/lib/mysql/mysql.sock` (the RHEL standard; overridable at runtime via `mysqli.default_socket` / `pdo_mysql.default_socket`).
   - **Win:** smaller/faster base image, fewer build deps, and removes reliance on the custom `mysql8.4-devel` package.
+  - **Matching spec cleanup:** dropped the now-dead `%global mysql_config` macro + comment (never referenced; pointed at a binary no longer installed) and replaced the `%(mysql_config --socket || echo …)` detection with the literal `%global mysql_sock /var/lib/mysql/mysql.sock` (the fallback it would always hit now). `%{mysql_sock}` is still used at `--with-mysql-sock`. The spec has **no** mysql/mariadb `BuildRequires`, so the build doesn't fail without the dev package.
 
 ## Candidate (not yet applied — operator decision)
 

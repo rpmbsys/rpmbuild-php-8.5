@@ -115,11 +115,10 @@
 # Adds -z now to the linker flags
 %global _hardened_build 1
 
-# Use the arch-specific mysql_config binary to avoid mismatch with the
-# arch detection heuristic used by bindir/mysql_config.
-%global mysql_config %{_libdir}/mysql/mysql_config
-
-%global mysql_sock %(mysql_config --socket 2>/dev/null || echo /var/lib/mysql/mysql.sock)
+# Built with mysqlnd (no libmysqlclient / mysql_config at build time). The
+# socket path is only a compile-time default for mysqli/pdo_mysql and is
+# overridable at runtime via mysqli.default_socket / pdo_mysql.default_socket.
+%global mysql_sock /var/lib/mysql/mysql.sock
 
 %global isasuffix -%{__isa_bits}
 
