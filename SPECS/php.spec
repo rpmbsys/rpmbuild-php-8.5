@@ -207,11 +207,8 @@ Source153: php85-20-ffi.ini
 # Build fixes
 Patch1: php-8.4.0-httpd.patch
 Patch5: php-8.5.0-includedir.patch
-Patch8: php-8.4.0-libdb.patch
 
 # Functional changes
-# Use system nikic/php-parser
-Patch41: php-8.5.0-parser.patch
 # use system tzdata
 Patch42: php-8.5.0-systzdata-v24.patch
 # See http://bugs.php.net/53436
@@ -238,17 +235,15 @@ Patch300: php-7.4.0-datetests.patch
 
 # relocation (400+)
 Patch405: php85-php-8.5.0-includedir.patch
-Patch409: php-7.0.8-relocation.patch
+Patch409: php-8.5.7-relocation.patch
 
 BuildRequires: autoconf >= 2.64
 BuildRequires: bison
 BuildRequires: bzip2-devel
 BuildRequires: flex
 BuildRequires: gcc-c++
-BuildRequires: gdbm-devel
 BuildRequires: httpd-devel >= 2.4
 BuildRequires: libacl-devel
-BuildRequires: libdb-devel
 BuildRequires: libstdc++-devel
 BuildRequires: libtool >= 1.4.3
 BuildRequires: libtool-ltdl-devel
@@ -349,10 +344,6 @@ Provides: php_database
 # part of the PHP core
 Provides: php-date, php-date%{?_isa}
 Provides: bundled(timelib)
-# using the --enable-dba configuration option you can enable PHP for basic support of dbm-style databases
-# To enable support for gdbm add --with-gdbm
-# To enable support for Oracle Berkeley DB 4 or 5 add --with-db4
-Provides: php-dba, php-dba%{?_isa}
 # php-ereg DEPRECATED in PHP 5.3.0, and REMOVED in PHP 7.0.0 (no --with-regex flag anymore)
 # To enable exif-support configure PHP with --enable-exif
 Provides: php-exif, php-exif%{?_isa}
@@ -373,8 +364,6 @@ Provides: php-lexbor, php-lexbor%{?_isa}
 # See ext/lexbor/patches/README.md
 %global lexborver 2.7.0
 Provides: bundled(lexbor) = %{lexborver}
-# You need to compile PHP with the --with-mhash parameter to enable this extension
-Provides: php-mhash, php-mhash%{?_isa}
 # This extension is enabled by default
 Provides: php-iconv, php-iconv%{?_isa}
 # extension may be installed using the bundled version as of PHP 5.3.0, --enable-intl will enable the bundled version
@@ -516,7 +505,6 @@ Requires: make
 Requires: openssl-devel%{?_isa} >= 1.0.2
 Requires: pcre2-devel%{?_isa}
 Requires: zlib-devel%{?_isa}
-Recommends: php-nikic-php-parser5 >= 5.6.1
 
 %description devel
 The php-devel package contains the files needed for building PHP
@@ -730,13 +718,10 @@ possibility to act as a socket server as well as a client.
 %patch -P5 -p1 -b .includedir
 %endif
 
-%patch -P8 -p1 -b .libdb
-
 %if %{with_relocation}
 %patch -P409 -p1
 %endif
 
-%patch -P41 -p1 -b .syslib
 %patch -P42 -p1 -b .systzdata
 %patch -P43 -p1 -b .headers
 %patch -P45 -p1 -b .ldap_r
@@ -928,7 +913,6 @@ ln -sf ../configure
     --disable-phpdbg \
     --disable-rpath \
     --enable-calendar \
-    --enable-dba --with-db4=%{_prefix} --with-gdbm \
     --enable-exif \
     --enable-ftp \
     --enable-gd \
@@ -955,7 +939,6 @@ ln -sf ../configure
     --with-jpeg=%{_prefix} \
     --with-layout=GNU \
     --with-libdir=%{_lib} \
-    --with-mhash \
     --with-mysql-sock=%{mysql_sock} \
     --with-mysqli=mysqlnd \
     --with-pdo-mysql=mysqlnd \

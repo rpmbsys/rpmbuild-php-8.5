@@ -7,13 +7,11 @@ RUN dnf -y install \
         capstone-devel \
         cyrus-sasl-devel \
         freetype-devel \
-        gdbm-devel \
         httpd-devel \
         krb5-devel \
         libacl-devel \
         libcurl-devel \
         libedit-devel \
-        libdb-devel \
         libffi-devel \
         libicu-devel \
         libjpeg-turbo-devel \
