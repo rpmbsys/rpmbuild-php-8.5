@@ -61,6 +61,12 @@ Audited the `--with relocation` path specifically:
 - **Verified end-to-end:** the full `%prep` patch sequence applies cleanly at **fuzz=0** for BOTH the default build and the relocation build (2026-06-18).
 - **Why this stayed hidden:** CI (`build.yaml`) only builds the default `rocky10build`/`rocky9build`; the `rocky10buildreloc` service is **never invoked**. The operator builds the relocation (`php85`-suffixed) variant **manually**, so relocation breakage never surfaces in CI — verify it by hand after touching any relocation source/patch.
 
+## mod_php parallel-install model (2026-06-18)
+
+httpd loads exactly one `php_module` (the module name is hardcoded in upstream PHP), so the Apache SAPI **cannot** be parallel-installed across versions — renaming `libphp.so`→`libphp85.so` would only dodge the file conflict, not enable two modules at runtime. Decision: the **main package** (which ships `libphp.so` + `02-php.conf` + `20-php.conf`) carries `Provides: mod_php` **and** `Conflicts: mod_php`, making system `php` / `php84` / `php85` mutually exclusive with a clean RPM conflict. Parallel PHP versions coexist via their `-cli` / `-fpm` / `-common` subpackages (suffixed paths) and are served through `php85-fpm`, not mod_php. Don't try to suffix the Apache module.
+
+Also fixed a `%description` typo where a stray `1.22.8` (zipver bump) had leaked into the word "contains".
+
 ## How to apply
 
 - The cleanest reference for a *fully* renamed sibling is `../rpmbuild-php-8.3` (`php83.spec`) and `../rpmbuild-php-8.4` (the copy source).

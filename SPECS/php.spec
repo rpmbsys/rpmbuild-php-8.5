@@ -306,6 +306,10 @@ Requires(pre): httpd
 # php engine for Apache httpd webserver
 Provides: php(httpd)
 Provides: mod_php = %{version}-%{release}
+# httpd can load only one php_module, so the Apache SAPI cannot be parallel
+# installed. Make every mod_php-bearing PHP build mutually exclusive (system
+# php, php84, php85, ...). CLI/FPM/common subpackages remain co-installable.
+Conflicts: mod_php
 
 %description
 PHP is an HTML-embedded scripting language. PHP attempts to make it
@@ -315,7 +319,7 @@ non-commercial database management systems, so writing a
 database-enabled webpage with PHP is fairly simple. The most common
 use of PHP coding is probably as a replacement for CGI scripts.
 
-The %{name} package contai1.22.8ns the module (often referred to as mod_php)
+The %{name} package contains the module (often referred to as mod_php)
 which adds support for the PHP language to Apache HTTP Server.
 
 %package common
