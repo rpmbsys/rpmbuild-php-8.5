@@ -1,6 +1,6 @@
 # rpmbuild-php-8.5 — PHP 8.5 RPM build project
 
-Builds the **PHP 8.5** RPM package set for Rocky Linux 9 & 10, plus the Docker images that wrap them. One member of the `rpmbuild-php-*` family (8.1 → 8.5). This repo was bootstrapped by copying `rpmbuild-php-8.4` and search/replacing 8.4→8.5 — **the rename is incomplete; see [`memory/audit-8.5-rename-incomplete.md`](memory/audit-8.5-rename-incomplete.md) before building.**
+Builds the **PHP 8.5** RPM package set for Rocky Linux 9 & 10, plus the Docker images that wrap them. One member of the `rpmbuild-php-*` family (8.1 → 8.5). This repo was bootstrapped by copying `rpmbuild-php-8.4` and search/replacing 8.4→8.5. **That rename is now complete and PHP 8.5.7 builds** (resolved 2026-06-17/18; downstream extensions compile against the published 8.5 base) — see [`memory/audit-8.5-rename-incomplete.md`](memory/audit-8.5-rename-incomplete.md) for the audit history.
 
 ## Purpose
 

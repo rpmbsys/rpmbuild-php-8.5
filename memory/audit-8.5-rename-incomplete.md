@@ -1,6 +1,6 @@
 ---
 name: 8.5 rename incomplete
-description: rpmbuild-php-8.5 was bootstrapped by copying php-8.4 and replacing 8.4→8.5, but the replacement only landed in Dockerfile/compose/CI/some SOURCES; SPECS/php.spec is still entirely 8.4. Build would fail at %prep. Audit 2026-06-17.
+description: "[RESOLVED 2026-06-17/18] Audit of the 8.4→8.5 rename: originally the rename had not landed in SPECS/php.spec (build would fail at %prep). All findings since fixed, relocation path verified, and PHP 8.5.7 now builds (downstream extensions compile against the published 8.5 base). This file is the audit history, not an open task."
 type: project
 ---
 **Audit date:** 2026-06-17. **Target:** PHP 8.5.7, spec stays `SPECS/php.spec`, default `main_name php`.
@@ -50,7 +50,7 @@ The operator worked through the findings and they are now **resolved**:
 - `major_version` / `%bcond_with rename` removed as unused (this fork's relocation = rename only).
 - New `8.5.7-1` changelog entry added; history preserved.
 
-**Remaining (cosmetic only):** 4 patches keep `php-8.4.0-*` filenames (Patch1 httpd, Patch8 libdb, Patch43 phpize, Patch47 phpinfo) — referenced and present, content-identical, so functional; rename to `php-8.5.0-*` is optional tidiness. **Not yet built** — spec is consistent but an actual `docker compose` build run is the next validation step.
+**Remaining: nothing blocking.** The 4 patches that keep `php-8.4.0-*` filenames (Patch1 httpd, Patch43 phpize, Patch47 phpinfo; Patch8 libdb was since dropped with dba — see [[review-8.5-assets]]) are **intentionally not renamed** — per the patch-naming convention the version marks when a patch was last revised, so unchanged patches keep their old names. Not a TODO. **Built status: RESOLVED** — PHP 8.5.7 has been built and published; the `-php-8.5` base image exists and downstream sibling extensions compile against PHP 8.5.7 (e.g. xdebug 3.5.3 compiled + test-ran against 8.5.7 on 2026-06-18). The "next validation step" is effectively done.
 
 ## Relocation-patch verification (2026-06-18)
 
