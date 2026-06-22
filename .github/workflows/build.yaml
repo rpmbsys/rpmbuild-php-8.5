@@ -95,7 +95,7 @@ jobs:
       - run: docker login ghcr.io -u $DOCKER_USER -p $DOCKER_PASS
       - run: docker compose -f ${{ matrix.compose-file }} push
       - run: |
-          PHP_VERSION=$(awk '/^Version:/ {print $2}' $SPEC_FILE)
+          PHP_VERSION=$(awk '/^%global upver/ {print $3}' $SPEC_FILE)
           RPM_RELEASE=$(awk '/^%global rpmrel/ {print $3}' $SPEC_FILE)
           PHP_DISTRO="${PHP_VERSION}-${RPM_RELEASE}"
           echo "IMG_DEVTAG=dev-${PHP_DISTRO}-b${GITHUB_RUN_ID}" >> "$GITHUB_ENV"
