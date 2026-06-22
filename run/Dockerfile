@@ -11,7 +11,6 @@ RUN microdnf -y --enablerepo=crb --enablerepo=bintray-custom --enablerepo=bintra
         php-bcmath \
         php-cli \
         php-fpm \
-        php-opcache \
         php-pecl-apcu \
         php-pecl-geoip \
         php-pecl-memcached \
