@@ -9,6 +9,6 @@ services:
     build:
       context: .
       args:
-        image: node22dev
+        image: node24dev
         rocky: $RL10
     image: "ghcr.io/rpmbsys/php85build:${RL10TAG}-devbase"
