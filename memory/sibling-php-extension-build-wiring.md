@@ -34,4 +34,4 @@ This repo (`rpmbuild-php-8.5`) builds the **base PHP 8.5 RPMs**. Sitting next to
 
 **Supported PHP set: 8.2 / 8.3 / 8.4 / 8.5.** On **2026-06-18** PHP 8.1 was dropped and 8.5 added across all 11 sibling repos (`pear`, `amqp`, `apcu`, `geoip`, `igbinary`, `imagick`, `memcached`, `msgpack`, `pcov`, `redis6`, `xdebug`) using the procedure above. `../rpmbuild-php-redis5` exists with the same structure but is legacy and was deliberately left untouched (redis6 supersedes it). `../rpmbuild-php-geoip/SPECS/docker-compose.php84.yml` is a stray duplicate not referenced by any workflow. As of 2026-06-18 those edits were applied to the working trees but not yet committed in the individual repos.
 
-Version pins live in each repo's `.env` (`RL9`/`RL9TAG`/`RL10`/`RL10TAG`), duplicated as literals in each `build.yaml` env block. Current: RL9=9.7.20251123, RL10=10.1.20251126.
+Version pins live in each repo's `.env` (`RL9`/`RL9TAG`/`RL10`/`RL10TAG`), duplicated as literals in each `build.yaml` env block. Current: RL9=9.8.20260525.0, RL10=10.2.20260525.0.

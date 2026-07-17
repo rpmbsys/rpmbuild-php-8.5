@@ -1,4 +1,4 @@
-ARG os=10.1.20251126
+ARG os=10.2.20260525.0
 ARG image=devbase
 FROM ghcr.io/rpmbsys/php85build:${os}-${image}
 
