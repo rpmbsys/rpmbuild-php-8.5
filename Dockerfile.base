@@ -1,5 +1,5 @@
 ARG os=10.2.20260525.0
-FROM aursu/rpmbuild:${os}-build
+FROM ghcr.io/aursu/rpmbuild:${os}-build
 
 USER root
 RUN dnf -y install \

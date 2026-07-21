@@ -22,7 +22,7 @@ These RPMs feed downstream PHP-extension build repos (`rpmbuild-php-redis6`, `-i
 | CI | GitHub Actions `.github/workflows/build.yaml`, runs on every push (`ubuntu-latest`) |
 | RPM publish target | JFrog Artifactory repo `php85custom` |
 | Image publish targets | `aursu/php85build` (Docker Hub), `ghcr.io/rpmbsys/php85build` (GHCR) |
-| Upstream base image | `aursu/rpmbuild:<rocky-tag>-build` → from [`docker-rpmbuild`](https://github.com/aursu/docker-rpmbuild) (the `rpmbuild/` submodule) |
+| Upstream base image | `ghcr.io/aursu/rpmbuild:<rocky-tag>-build` → from [`docker-rpmbuild`](https://github.com/aursu/docker-rpmbuild) (the `rpmbuild/` submodule) |
 | Branch | `main`; `skip-rpm-*` branches skip the RPM `test` job (see `if: ! startsWith(...,'skip-rpm-')`) |
 | Remote | `origin` → `git@github.com:rpmbsys/rpmbuild-php-8.5.git` (public) |
 
@@ -36,7 +36,7 @@ These RPMs feed downstream PHP-extension build repos (`rpmbuild-php-redis6`, `-i
 ├── SOURCES/                    Tarball + .asc + keyring + patches + config templates
 │                               (default php-* names; php85-* / php-7.0.8-relocation = relocation build)
 ├── Dockerfile                  rpmbuild runner: FROM aursu/php85build:${os}-base, runs `rpmbuild php.spec`
-├── Dockerfile.base             Build-env image (RL10): FROM aursu/rpmbuild:${os}-build + PHP build deps
+├── Dockerfile.base             Build-env image (RL10): FROM ghcr.io/aursu/rpmbuild:${os}-build + PHP build deps
 ├── Dockerfile.RL9.base         Build-env image (RL9)
 ├── docker-compose.yml          rocky10build / rocky10buildreloc (the RPM build)
 ├── docker-compose.RL9.yml      Rocky 9 build
