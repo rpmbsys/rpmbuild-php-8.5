@@ -1,5 +1,7 @@
 name: RPM build
-on: [push]
+on:
+  push:
+  workflow_dispatch:
 env:
   ARTIFACTORY_URL: https://rpmb.jfrog.io
   BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
@@ -13,6 +15,12 @@ env:
   RL10: 10.2.20260525.0
   RL10TAG: 10.2.20260525.0
 jobs:
+  # PHASE 1 of the per-version pipeline: build RPMs (-> JFrog php85custom) and
+  # the aursu/php85build:<os>-build base image that pear/extensions build FROM.
+  # runtime/dev images moved to images.yaml — they install the PECL extensions
+  # and must run AFTER the family rebuild, so they are driven by the orchestrator
+  # (rpmbsys/rpmbuild-pipeline-php) which dispatches images.yaml when the family
+  # is done. On master, the `notify` job kicks that orchestrator.
   test:
     runs-on: ubuntu-latest
     if: ${{ ! startsWith(github.ref_name, 'skip-rpm-') }}
@@ -55,49 +63,27 @@ jobs:
       - run: docker compose -f build/docker-compose.yml build --no-cache --pull
       - run: docker login -u $DOCKER_USER -p $DOCKER_PASS
       - run: docker compose -f build/docker-compose.yml push
-  runtime:
-    needs: test
-    if: ${{ always() }}
+  # Kick the ordered family + image pipeline once the base phase succeeds.
+  notify:
+    needs: [test, build]
+    if: ${{ github.ref_name == 'main' }}
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        compose-file: [run/docker-compose.yml, run/docker-compose.RL9.yml]
-    env:
-      DOCKER_PASS: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v3
+      - name: Mint scoped App token
+        id: token
+        uses: actions/create-github-app-token@v1
         with:
-          submodules: true
-      - run: docker compose -f ${{ matrix.compose-file }} build --no-cache --pull
-      - run: docker login ghcr.io -u $DOCKER_USER -p $DOCKER_PASS
-      - run: docker compose -f ${{ matrix.compose-file }} push
-      - run: |
-          PHP_VERSION=$(awk '/^%global upver/ {print $3}' $SPEC_FILE)
-          RPM_RELEASE=$(awk '/^%global rpmrel/ {print $3}' $SPEC_FILE)
-          PHP_DISTRO="${PHP_VERSION}-${RPM_RELEASE}"
-          echo "IMG_RUNTAG=runtime-${PHP_DISTRO}-b${GITHUB_RUN_ID}" >> "$GITHUB_ENV"
-      - run: RUNTAG="${IMG_RUNTAG}" docker compose -f ${{ matrix.compose-file }} build
-      - run: RUNTAG="${IMG_RUNTAG}" docker compose -f ${{ matrix.compose-file }} push
-  dev:
-    needs: runtime
-    if: ${{ always() }}
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        compose-file: [run/docker-compose.dev.yml]
-    env:
-      DOCKER_PASS: ${{ secrets.GITHUB_TOKEN }}
-    steps:
-      - uses: actions/checkout@v3
+          app-id: ${{ vars.CI_APP_ID }}
+          private-key: ${{ secrets.CI_APP_PRIVATE_KEY }}
+          owner: rpmbsys
+          repositories: rpmbuild-pipeline-php
+      - name: Trigger PHP 8.5 pipeline
+        uses: actions/github-script@v7
         with:
-          submodules: true
-      - run: docker compose -f ${{ matrix.compose-file }} build --no-cache --pull
-      - run: docker login ghcr.io -u $DOCKER_USER -p $DOCKER_PASS
-      - run: docker compose -f ${{ matrix.compose-file }} push
-      - run: |
-          PHP_VERSION=$(awk '/^%global upver/ {print $3}' $SPEC_FILE)
-          RPM_RELEASE=$(awk '/^%global rpmrel/ {print $3}' $SPEC_FILE)
-          PHP_DISTRO="${PHP_VERSION}-${RPM_RELEASE}"
-          echo "IMG_DEVTAG=dev-${PHP_DISTRO}-b${GITHUB_RUN_ID}" >> "$GITHUB_ENV"
-      - run: DEVTAG="${IMG_DEVTAG}" docker compose -f ${{ matrix.compose-file }} build
-      - run: DEVTAG="${IMG_DEVTAG}" docker compose -f ${{ matrix.compose-file }} push
+          github-token: ${{ steps.token.outputs.token }}
+          script: |
+            await github.rest.repos.createDispatchEvent({
+              owner: 'rpmbsys',
+              repo: 'rpmbuild-pipeline-php',
+              event_type: 'php85-base-ready',
+            })

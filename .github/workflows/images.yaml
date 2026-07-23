@@ -1,0 +1,63 @@
+name: Runtime/dev images
+
+# PHASE 2 of the per-version pipeline. Builds the runtime + dev images, which
+# install the PECL extensions (php-pecl-apcu/geoip/memcached/redis6/imagick)
+# from JFrog php85custom. It therefore MUST run after the extension family has
+# been rebuilt — so it is dispatched by rpmbsys/rpmbuild-pipeline-php once the
+# 8.5 family pipeline completes, not on push. Can also be run manually.
+
+on:
+  workflow_dispatch:
+
+env:
+  DOCKER_USER: ${{ secrets.DOCKER_USER }}
+  SPEC_FILE: SPECS/php.spec
+  RL9: 9.8.20260525.0
+  RL9TAG: 9.8.20260525.0
+  RL10: 10.2.20260525.0
+  RL10TAG: 10.2.20260525.0
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compose-file: [run/docker-compose.yml, run/docker-compose.RL9.yml]
+    env:
+      DOCKER_PASS: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - run: docker compose -f ${{ matrix.compose-file }} build --no-cache --pull
+      - run: docker login ghcr.io -u $DOCKER_USER -p $DOCKER_PASS
+      - run: docker compose -f ${{ matrix.compose-file }} push
+      - run: |
+          PHP_VERSION=$(awk '/^%global upver/ {print $3}' $SPEC_FILE)
+          RPM_RELEASE=$(awk '/^%global rpmrel/ {print $3}' $SPEC_FILE)
+          PHP_DISTRO="${PHP_VERSION}-${RPM_RELEASE}"
+          echo "IMG_RUNTAG=runtime-${PHP_DISTRO}-b${GITHUB_RUN_ID}" >> "$GITHUB_ENV"
+      - run: RUNTAG="${IMG_RUNTAG}" docker compose -f ${{ matrix.compose-file }} build
+      - run: RUNTAG="${IMG_RUNTAG}" docker compose -f ${{ matrix.compose-file }} push
+  dev:
+    needs: runtime
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compose-file: [run/docker-compose.dev.yml]
+    env:
+      DOCKER_PASS: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - run: docker compose -f ${{ matrix.compose-file }} build --no-cache --pull
+      - run: docker login ghcr.io -u $DOCKER_USER -p $DOCKER_PASS
+      - run: docker compose -f ${{ matrix.compose-file }} push
+      - run: |
+          PHP_VERSION=$(awk '/^%global upver/ {print $3}' $SPEC_FILE)
+          RPM_RELEASE=$(awk '/^%global rpmrel/ {print $3}' $SPEC_FILE)
+          PHP_DISTRO="${PHP_VERSION}-${RPM_RELEASE}"
+          echo "IMG_DEVTAG=dev-${PHP_DISTRO}-b${GITHUB_RUN_ID}" >> "$GITHUB_ENV"
+      - run: DEVTAG="${IMG_DEVTAG}" docker compose -f ${{ matrix.compose-file }} build
+      - run: DEVTAG="${IMG_DEVTAG}" docker compose -f ${{ matrix.compose-file }} push
