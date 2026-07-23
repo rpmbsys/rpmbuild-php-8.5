@@ -82,8 +82,13 @@ jobs:
         with:
           github-token: ${{ steps.token.outputs.token }}
           script: |
-            await github.rest.repos.createDispatchEvent({
-              owner: 'rpmbsys',
-              repo: 'rpmbuild-pipeline-php',
-              event_type: 'php85-base-ready',
-            })
+            // workflow_dispatch (needs Actions:write) rather than a
+            // repository_dispatch (which would need Contents:write).
+            const owner = 'rpmbsys';
+            const repo = 'rpmbuild-pipeline-php';
+            const { data: r } = await github.rest.repos.get({ owner, repo });
+            await github.rest.actions.createWorkflowDispatch({
+              owner, repo,
+              workflow_id: 'php-8.5.yml',
+              ref: r.default_branch,
+            });
