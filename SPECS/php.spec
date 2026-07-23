@@ -133,7 +133,7 @@
 %bcond_without         dtrace
 %bcond_without         zip
 
-%global rpmrel 3
+%global rpmrel 1
 %global baserel %{rpmrel}%{?dist}
 
 # liburiparser version 1.0.0 required
@@ -147,7 +147,7 @@
 %bcond_with          liburiparser
 %endif
 
-%global upver        8.5.7
+%global upver        8.5.8
 
 Summary: PHP scripting language for creating dynamic web sites
 Name: %{php_main}
@@ -1535,6 +1535,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Jul  1 2026 Remi Collet <remi@remirepo.net> - 8.5.8-1
+- Update to 8.5.8 - http://www.php.net/releases/8_5_8.php
+
 * Thu Jun 18 2026 Alexander Ursu <alexander.ursu@gmail.com> - 8.5.7-3
 - drop ext/dba and Berkeley DB (db4) support (removes php-dba; drops libdb/gdbm build deps)
 - drop deprecated --with-mhash (mhash deprecated since 8.1; removes php-mhash)
