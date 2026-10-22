@@ -1,7 +1,7 @@
 ## PHP 8.5 RPM Build Process
 
 This repository contains Docker-based infrastructure to build the **PHP 8.5**
-RPM package set (currently **8.5.7**) and the Docker images that wrap it, for
+RPM package set (currently **8.5.12**) and the Docker images that wrap it, for
 **Rocky Linux 9 and 10**.
 
 You can run the build locally or use the automated GitHub Actions workflow.

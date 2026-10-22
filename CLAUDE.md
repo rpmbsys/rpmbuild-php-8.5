@@ -18,7 +18,7 @@ These RPMs feed downstream PHP-extension build repos (`rpmbuild-php-redis6`, `-i
 |---|---|
 | Build tool | `rpmbuild` inside Docker, orchestrated by docker-compose |
 | Spec | `SPECS/php.spec` (single spec; **note**: siblings use `phpNN.spec`, this repo intentionally keeps `php.spec`) |
-| Target version | **8.5.7** (tarball lives in `SOURCES/`) |
+| Target version | **8.5.12** (tarball lives in `SOURCES/`) |
 | CI | GitHub Actions `.github/workflows/build.yaml`, runs on every push (`ubuntu-latest`) |
 | RPM publish target | JFrog Artifactory repo `php85custom` |
 | Image publish targets | `aursu/php85build` (Docker Hub), `ghcr.io/rpmbsys/php85build` (GHCR) |

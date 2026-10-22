@@ -147,7 +147,7 @@
 %bcond_with          liburiparser
 %endif
 
-%global upver        8.5.8
+%global upver        8.5.12
 
 Summary: PHP scripting language for creating dynamic web sites
 Name: %{php_main}
@@ -1535,6 +1535,18 @@ exit 0
 %endif
 
 %changelog
+* Wed Oct 21 2026 Jitka Plesnikova <jplesnik@redhat.com> - 8.5.12-1
+- Update to 8.5.12 - http://www.php.net/releases/8_5_12.php
+
+* Tue Sep 22 2026 Remi Collet <remi@remirepo.net> - 8.5.11-1
+- Update to 8.5.11 - http://www.php.net/releases/8_5_11.php
+
+* Wed Aug 26 2026 Remi Collet <remi@remirepo.net> - 8.5.10-1
+- Update to 8.5.10 - http://www.php.net/releases/8_5_10.php
+
+* Tue Jul 28 2026 Remi Collet <remi@remirepo.net> - 8.5.9-1
+- Update to 8.5.9 - http://www.php.net/releases/8_5_9.php
+
 * Wed Jul  1 2026 Remi Collet <remi@remirepo.net> - 8.5.8-1
 - Update to 8.5.8 - http://www.php.net/releases/8_5_8.php
 
