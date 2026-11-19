@@ -138,7 +138,7 @@
 
 # liburiparser version 1.0.0 required
 %global liburiparser_minver 1.0.0
-%global liburiparser_bunver 1.0.2
+%global liburiparser_bunver 1.0.3
 %if 0%{?fedora} || 0%{?rhel} >= 11
 # use system liburiparser when available
 %bcond_without       liburiparser
@@ -147,7 +147,7 @@
 %bcond_with          liburiparser
 %endif
 
-%global upver        8.5.12
+%global upver        8.5.13
 
 Summary: PHP scripting language for creating dynamic web sites
 Name: %{php_main}
@@ -1535,6 +1535,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Nov 19 2026 Remi Collet <remi@remirepo.net> - 8.5.13-1
+- Update to 8.5.13 - http://www.php.net/releases/8_5_13.php
+
 * Wed Oct 21 2026 Jitka Plesnikova <jplesnik@redhat.com> - 8.5.12-1
 - Update to 8.5.12 - http://www.php.net/releases/8_5_12.php
 
