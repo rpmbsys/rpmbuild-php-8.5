@@ -1,4 +1,4 @@
-ARG os=10.2.20260525.0
+ARG os=10.3.20261112.0
 FROM ghcr.io/aursu/rpmbuild:${os}-build
 
 USER root
